@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-10T16:46:17.2059838+08:00",
+  "title": "Design System: TG Cine",
+  "extensions": {},
+  "components": [
+    {"name":"Primary Button","kind":"button","refersTo":"button-primary","description":"浅色模式静态浏览器示意；Flutter 状态和超级椭圆形状以 ForUI 为准。","html":"<button class=\"ds-primary\">前往设置</button>","css":".ds-primary{background:#171717;color:#fafafa;border:0;border-radius:10px;padding:14px 12px;min-height:48px;font:500 16px/1 Inter,sans-serif}.ds-primary:hover{cursor:pointer}.ds-primary:focus-visible{outline:auto}.ds-primary:active{cursor:pointer}"},
+    {"name":"Bottom Navigation","kind":"nav","description":"浅色模式标签与选中状态示意；实际导航包含 Lucide 图标和底部安全区域。","html":"<nav class=\"ds-nav\" aria-label=\"主导航\"><button aria-current=\"page\">片库</button><button>记录</button><button>设置</button></nav>","css":".ds-nav{display:flex;justify-content:space-around;border-top:1px solid #e5e5e5;background:#fff}.ds-nav button{background:transparent;border:0;padding:5px;color:#737373;font:400 10px/1.5 Inter,sans-serif}.ds-nav [aria-current]{color:#171717;font-weight:700}.ds-nav button:hover{cursor:pointer}.ds-nav button:focus-visible{outline:auto}"},
+    {"name":"Connection Status Group","kind":"card","description":"无交互的浅色状态分组示意；实际布局由 FTileGroup/FTile 提供。","html":"<div class=\"ds-group\"><div>Telegram <span>未连接</span></div><div>中转服务 <span>未配置</span></div></div>","css":".ds-group{border:1px solid #e5e5e5;border-radius:10px;overflow:hidden;background:#fff;color:#0a0a0a;font:400 16px/1.5 Inter,sans-serif}.ds-group>div{padding:14.5px 15px;display:flex;justify-content:space-between}.ds-group>div+div{border-top:1px solid #e5e5e5}.ds-group span{color:#737373}"}
+  ],
+  "narrative": {
+    "overview": "沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。不限制平台，手机端界面优先，中文（zh_CN）界面，明暗模式跟随系统，图标使用 ForUI Lucide。\n当前仅有片库、观看记录、设置三个初始化页面；Telegram 登录、播放和中转尚未接入。",
+    "dos": ["Do 使用当前 ForUI 主题、默认组件状态及 Lucide 图标，保留安全区域、字体缩放和滚动。"],
+    "donts": ["Don't 添加虚构影片、连接成功状态或未实现功能的可点击入口。"]
+  }
+}

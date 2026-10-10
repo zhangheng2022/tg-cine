@@ -1,0 +1,20 @@
+{
+  "@@locale": "zh",
+  "appName": "TG Cine",
+  "libraryTab": "片库",
+  "historyTab": "记录",
+  "historyTitle": "观看记录",
+  "settingsTitle": "设置",
+  "libraryEmptyTitle": "还没有影片",
+  "libraryEmptyDescription": "连接 Telegram 后，在这里浏览你的电影与剧集。",
+  "openSettings": "前往设置",
+  "historyEmptyTitle": "从第一部影片开始",
+  "historyEmptyDescription": "观看记录会保存在这里，方便你下次继续播放。",
+  "openLibrary": "返回片库",
+  "connectionSection": "账户与连接",
+  "connectionUnavailable": "连接功能将在后续版本开放。",
+  "telegram": "Telegram",
+  "notConnected": "未连接",
+  "relayService": "中转服务",
+  "notConfigured": "未配置"
+}

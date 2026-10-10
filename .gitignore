@@ -1,0 +1,8 @@
+.impeccable/review/
+/graphify-out/
+.env
+.env.*
+!.env.example
+**/key.properties
+**/*.jks
+**/*.keystore
