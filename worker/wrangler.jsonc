@@ -1,0 +1,10 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "tg-cine-worker",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-10-10",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": { "enabled": true },
+	"vars": { "RELAY_TARGETS": "{}" },
+	"secrets": { "required": ["RELAY_TOKEN"] },
+}

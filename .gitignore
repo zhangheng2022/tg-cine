@@ -6,3 +6,4 @@
 **/key.properties
 **/*.jks
 **/*.keystore
+/.cache/
