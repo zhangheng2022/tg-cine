@@ -1,6 +1,6 @@
 # TG Cine
 
-Telegram 支持的开源个人电影与电视剧播放器。手机端优先，使用 Flutter / Dart 和 [ForUI](https://forui.dev/docs)，不使用 Go。
+Telegram 支持的开源个人电影与电视剧播放器。手机与宽屏同时适配，使用 Flutter / Dart 和 [ForUI](https://forui.dev/docs)，不使用 Go。
 
 不限制平台，已生成 Android、iOS、Web、Windows、macOS、Linux 六个平台模板。
 界面包含片库、观看记录、设置三个页面，ForUI 触控主题、系统明暗模式和中文界面。

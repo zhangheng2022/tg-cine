@@ -2,7 +2,7 @@
 
 参考本机 `meet_trace` 的分层 MVVM，保留 `app/` 作为 Flutter 工程根目录。
 使用 `flutter create --platforms=android,ios,web,windows,macos,linux --project-name=tg_cine --org=io.tgcine --empty app` 生成官方模板。
-不限制平台，手机端界面优先；当前工程模板已覆盖六个平台，具体业务的跨平台支持在接入时验证。
+不限制平台，手机与宽屏界面须同时适配；当前工程模板已覆盖六个平台，具体业务的跨平台支持在接入时验证。布局依据可用窗口宽度响应变化，界面变更须同时验证手机与宽屏场景。
 `worker/` 为独立的 TypeScript Cloudflare Worker 工程，见 [Worker 基础架构](worker-architecture.md)；本次初始化不新增 Flutter 中转客户端或业务依赖。
 
 ```text

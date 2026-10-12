@@ -30,7 +30,7 @@ components:
 
 ## Overview
 
-沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。不限制平台，手机端界面优先，中文（zh_CN）界面，明暗模式跟随系统，图标使用 ForUI Lucide。
+沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。不限制平台，手机与宽屏界面须同时适配，中文（zh_CN）界面，明暗模式跟随系统，图标使用 ForUI Lucide。
 当前仅有片库、观看记录、设置三个初始化页面；Telegram 登录、播放和中转尚未接入。
 
 ## Colors
@@ -43,7 +43,7 @@ Primary 为主题的黑白主操作对比色；Neutral 用于页面、文字、�
 
 ## Layout
 
-FScaffold 保留默认横向内边距；FHeader 处理顶部安全区域，底部导航显式启用 `safeAreaBottom`。主体各页独立滚动；空状态以可用高度为最小高度居中，宽度最多 320dp、上下内边距 32dp，空间不足时可纵向滚动。空状态图标 48dp；顺序间隔为 24、12、28dp；主按钮约束最小高度 48dp。设置内容顶部留 16dp，不新增桌面断点。
+FScaffold 保留默认横向内边距；FHeader 处理顶部安全区域，底部导航显式启用 `safeAreaBottom`。主体各页独立滚动；空状态以可用高度为最小高度居中，宽度最多 320dp、上下内边距 32dp，空间不足时可纵向滚动。空状态图标 48dp；顺序间隔为 24、12、28dp；主按钮约束最小高度 48dp。设置内容顶部留 16dp。当前实现未设置桌面断点；后续布局按可用窗口宽度适配，手机与宽屏须同步验证。
 
 ## Elevation & Depth
 
