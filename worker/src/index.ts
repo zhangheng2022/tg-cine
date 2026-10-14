@@ -2,7 +2,7 @@ import { errorResponse, PROTOCOL_VERSION } from './protocol';
 import { handleTunnel } from './tunnel';
 
 export default {
-	async fetch(request, env): Promise<Response> {
+	async fetch(request, env, ctx): Promise<Response> {
 		const path = new URL(request.url).pathname;
 		if (path !== '/health' && path !== '/v1/tunnel') {
 			return errorResponse(404, 'NOT_FOUND');
@@ -12,10 +12,15 @@ export default {
 		}
 		if (path === '/health') {
 			return Response.json(
-				{ service: 'tg-cine-worker', status: 'ok', protocolVersion: PROTOCOL_VERSION, capabilities: { tunnel: false } },
+				{
+					service: 'tg-cine-worker',
+					status: 'ok',
+					protocolVersion: PROTOCOL_VERSION,
+					capabilities: { tunnel: env.RELAY_ENABLED === 'true' },
+				},
 				{ headers: { 'Cache-Control': 'no-store' } },
 			);
 		}
-		return handleTunnel(request, env);
+		return handleTunnel(request, env, ctx);
 	},
 } satisfies ExportedHandler<Env>;

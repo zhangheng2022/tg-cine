@@ -13,6 +13,7 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"test": "vitest run",
+		"test:relay": "node scripts/verify-local-relay.mjs",
 		"build": "wrangler deploy --dry-run --outdir dist"
 	},
 	"devDependencies": {
