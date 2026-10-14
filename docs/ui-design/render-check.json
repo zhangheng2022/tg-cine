@@ -1,0 +1,575 @@
+{
+  "scope": "Static design only; not Flutter/runtime or accessibility acceptance",
+  "date": "2026-10-12",
+  "checks": [
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "library",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "search",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "movie",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "series",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "player",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "history",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "sources",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "source-detail",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "pending",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "organize",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "settings",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "welcome",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "login",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "verify",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "choose-sources",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "importing",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "empty",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "no-results",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "service-error",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "media-error",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "privacy",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "report",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 844,
+      "overflow": [],
+      "page": "states",
+      "scrollWidth": 390,
+      "shortActions": [],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "library",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "search",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "movie",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "series",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "player",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "history",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "sources",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "source-detail",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "pending",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "organize",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "settings",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "welcome",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "login",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "verify",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "choose-sources",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "importing",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "empty",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "no-results",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "service-error",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "media-error",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "privacy",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "report",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "states",
+      "scrollWidth": 1440,
+      "shortActions": [],
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "fonts": "loaded",
+      "height": 568,
+      "overflow": [],
+      "page": "library",
+      "scrollWidth": 320,
+      "shortActions": [],
+      "text": "large",
+      "theme": "dark",
+      "width": 320
+    },
+    {
+      "fonts": "loaded",
+      "height": 568,
+      "overflow": [],
+      "page": "settings",
+      "scrollWidth": 320,
+      "shortActions": [],
+      "text": "large",
+      "theme": "dark",
+      "width": 320
+    },
+    {
+      "fonts": "loaded",
+      "height": 900,
+      "overflow": [],
+      "page": "library",
+      "scrollWidth": 800,
+      "shortActions": [],
+      "text": "large",
+      "theme": "dark",
+      "width": 800
+    },
+    {
+      "fonts": "loaded",
+      "height": 720,
+      "overflow": [],
+      "page": "library",
+      "scrollWidth": 1280,
+      "shortActions": [],
+      "text": "large",
+      "theme": "dark",
+      "width": 1280
+    }
+  ],
+  "reviewChecks": [
+    {
+      "continueThumbs": [
+        {
+          "align": "flex-start",
+          "h": 53.125,
+          "w": 85
+        },
+        {
+          "align": "flex-start",
+          "h": 0,
+          "w": 0
+        }
+      ],
+      "height": 568,
+      "page": "library",
+      "sidebarTag": [],
+      "smallIcons": 0,
+      "viewportOverflow": false,
+      "width": 320
+    },
+    {
+      "continueThumbs": [
+        {
+          "align": "flex-start",
+          "h": 75.625,
+          "w": 110
+        },
+        {
+          "align": "flex-start",
+          "h": 75.625,
+          "w": 110
+        }
+      ],
+      "height": 720,
+      "page": "library",
+      "sidebarTag": [
+        {
+          "sidebarRight": 196,
+          "tagRight": 167
+        }
+      ],
+      "smallIcons": 0,
+      "viewportOverflow": false,
+      "width": 1280
+    },
+    {
+      "continueThumbs": [],
+      "height": 844,
+      "page": "movie",
+      "sidebarTag": [],
+      "smallIcons": 0,
+      "viewportOverflow": false,
+      "width": 390
+    },
+    {
+      "continueThumbs": [],
+      "height": 844,
+      "page": "player",
+      "sidebarTag": [],
+      "smallIcons": 0,
+      "viewportOverflow": false,
+      "width": 390
+    }
+  ]
+}

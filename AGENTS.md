@@ -14,7 +14,7 @@
 工具版本以 CI 和工程配置为准，当前使用 Flutter 3.47.7 和 Node.js 24；在对应工程目录执行命令。
 
 - 在 `app/`：`flutter pub get` 安装依赖，`flutter run` 启动客户端。
-- `dart format lib test`、`flutter analyze`、`flutter test` 分别执行格式化、静态分析和测试。
+- `dart format lib test tool`、`flutter analyze`、`flutter test` 分别执行格式化、静态分析和测试。
 - `flutter build web`、`flutter build apk --debug` 验证 CI 使用的构建目标。
 - 在 `worker/`：`npm ci` 安装锁定依赖，`npm run dev` 启动本地 Wrangler。
 - `npm run format:check`、`npm run check`、`npm test` 分别检查格式、生成并检查类型、运行测试。
@@ -34,7 +34,13 @@ Flutter 使用 `flutter_test`，测试目录镜像源码路径，文件命名为
 
 ## 技能与审查工作流
 
-按任务使用 `impeccable`、`open-codereview` 和 `graphify`；技能先读取当前环境提供的 `SKILL.md`，工具遵循实际接口。用户要求“先给方案”时只分析，执行范围以用户授权为准。
+按任务使用 `grill-me`、`impeccable`、`open-codereview` 和 `graphify`；技能先读取当前环境提供的 `SKILL.md`，工具遵循实际接口。用户要求“先给方案”时只分析，执行范围以用户授权为准。
+
+### grill-me：方案质询与决策澄清
+
+- 用户明确调用 `/grill-me` 或要求深入质询方案、设计时启用，不自动用于普通开发。入口位于 `.agents/skills/grill-me/SKILL.md`，委托 `grilling` 执行；先读取两者说明。
+- 源码、配置和调用关系先自行查证，只向用户询问需要其决定的问题。将决策组织为依赖树，每轮集中询问前提已确定的问题，编号并给出建议；等待回答后再推进依赖这些答案的问题。
+- 结合任务核对手机与宽屏适配、ForUI 组件与 Flutter 分层、Worker 协议及鉴权白名单。整理已确认决策和待定事项，用户确认理解一致后再按授权实施；质询本身不授权部署。
 
 ### Impeccable：界面设计与验收
 
@@ -60,4 +66,4 @@ Flutter 使用 `flutter_test`，测试目录镜像源码路径，文件命名为
 
 ## 安全与配置
 
-凭据保存在已忽略的 `.dev.vars` 或 Worker Secrets 中，与 Telegram 会话分开。保留 `RELAY_TARGETS` 默认空白名单，不提交密钥或构建产物。中转入口当前返回 `501`，本地检查不代表真实中转连通；部署须获得明确授权。
+凭据保存在已忽略的 `.dev.vars` 或 Worker Secrets 中，与 Telegram 会话分开。保留 `RELAY_TARGETS` 默认空白名单，不提交密钥或构建产物。中转默认关闭并返回 `501`；实验性启用和本地回环不代表 Telegram 或边缘中转通过，不能将开发共享令牌写入公开客户端。部署须获得明确授权。
