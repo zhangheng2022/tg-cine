@@ -5,16 +5,27 @@ import '../../../../l10n/l10n.dart';
 import '../../../core/app_empty_state.dart';
 
 class LibraryView extends StatelessWidget {
-  const LibraryView({required this.onOpenSettings, super.key});
+  const LibraryView({
+    required this.onOpenSources,
+    this.onOpenPlayer,
+    super.key,
+  });
 
-  final VoidCallback onOpenSettings;
+  final VoidCallback onOpenSources;
+  final VoidCallback? onOpenPlayer;
 
   @override
   Widget build(BuildContext context) => AppEmptyState(
     icon: FLucideIcons.film,
-    title: context.l10n.libraryEmptyTitle,
-    description: context.l10n.libraryEmptyDescription,
-    action: context.l10n.openSettings,
-    onPress: onOpenSettings,
+    title: onOpenPlayer == null
+        ? context.l10n.libraryEmptyTitle
+        : context.l10n.selectedVideo,
+    description: onOpenPlayer == null
+        ? context.l10n.libraryEmptyDescription
+        : context.l10n.developmentSelectedNotice,
+    action: onOpenPlayer == null
+        ? context.l10n.openSources
+        : context.l10n.openSelectedVideo,
+    onPress: onOpenPlayer ?? onOpenSources,
   );
 }

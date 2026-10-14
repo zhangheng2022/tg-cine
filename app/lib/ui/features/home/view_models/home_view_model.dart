@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum HomeTab { library, history, settings }
+enum HomeTab { library, history, sources, settings }
 
 class HomeViewModel extends ChangeNotifier {
   HomeTab _selectedTab = HomeTab.library;
