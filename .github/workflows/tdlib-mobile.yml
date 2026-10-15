@@ -1,8 +1,14 @@
 name: Build mobile TDLib
 on:
   workflow_dispatch:
+    inputs:
+      artifact_run_id:
+        description: '复用本仓库已完成原生构建的运行 ID；留空从固定源码构建'
+        required: false
+        default: ''
 permissions:
   contents: read
+  actions: read
 jobs:
   native:
     strategy:
@@ -20,15 +26,24 @@ jobs:
         with:
           persist-credentials: false
       - name: Android build tools
-        if: matrix.platform == 'android'
+        if: matrix.platform == 'android' && inputs.artifact_run_id == ''
         run: |
           sudo apt-get update
           sudo apt-get install -y gperf cmake ninja-build g++ make perl php default-jdk
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'ndk;28.2.13676358' 'cmake;3.22.1'
       - name: iOS build tools
-        if: matrix.platform == 'ios'
+        if: matrix.platform == 'ios' && inputs.artifact_run_id == ''
         run: brew install gperf cmake coreutils
       - run: bash app/tool/build_mobile_tdlib.sh ${{ matrix.platform }}
+        if: inputs.artifact_run_id == ''
+      - name: Reuse verified native build artifacts
+        if: inputs.artifact_run_id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_RUN_ID: ${{ inputs.artifact_run_id }}
+        run: |
+          [[ "$NATIVE_RUN_ID" =~ ^[0-9]+$ ]] || exit 64
+          gh run download "$NATIVE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "tdlib-${{ matrix.platform }}-c15d3f5" --dir ".cache/native/mobile-build/${{ matrix.platform }}/package"
       - name: Stage verified native artifacts
         run: python3 app/tool/install_mobile_tdlib.py .cache/native/mobile-build/${{ matrix.platform }}/package
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
