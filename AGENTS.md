@@ -8,7 +8,7 @@
 
 ## 开发检查
 
-使用工程和 CI 锁定版本（Flutter 3.47.7）。在根目录运行 `flutter pub get`、`dart format lib test tool integration_test`、`flutter analyze`、`flutter test`、`python -m unittest discover -s tool -p 'test_*.py'`。相关构建包括 `flutter build web`、`flutter build apk --debug` 和平台构建。不要将可构建模板等同于真实平台业务验收。
+使用工程和 CI 锁定版本（Flutter 3.47.7）。在根目录运行 `flutter pub get`、`dart format --output=none --set-exit-if-changed lib test tool integration_test`、`flutter analyze`、`flutter test`、`python -m unittest discover -s tool -p 'test_*.py'`。格式修复时再运行 `dart format lib test tool integration_test`。相关构建包括 `flutter build web`、`flutter build apk --debug` 和平台构建。不要将可构建模板等同于真实平台业务验收。
 
 采用两空格、snake_case 文件名、UpperCamelCase 类型。优先 ForUI、context.theme、context.l10n，保留安全区、字体缩放和 48dp 主操作。修改 ARB 后运行 flutter gen-l10n。界面按可用窗口宽度同时适配手机与宽屏，测试覆盖明暗主题与大字体。
 

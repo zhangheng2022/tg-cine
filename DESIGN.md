@@ -31,7 +31,7 @@ components:
 ## Overview
 
 沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。产品目标保留 Android、iOS、Web、Windows、macOS、Linux 六个平台，手机与宽屏界面须同时适配，中文（zh_CN）界面，图标使用 ForUI Lucide。外观可选跟随系统、浅色或深色，并保存在本机。
-片库、记录、来源和设置组成四项导航；原生客户端通过内置默认服务接入应用内登录、来源选择与原文件片库。默认服务状态与 Telegram 登录状态分开显示；未具备项目应用标识或对应 TDLib 的构建保持不可用，Windows Debug 可保留原本机数据目录并改用独立设备凭据。观看记录、电影与电视剧资料、片库播放和续看尚未接线。Windows 开发播放器沿用相同视觉系统；当前业务与平台验收边界以 PRODUCT.md 为准，线上默认服务结果见 docs/public-service.md。
+片库、记录、来源和设置组成四项导航；原生客户端通过内置默认服务接入应用内登录、来源选择与原文件片库。默认服务状态与 Telegram 登录状态分开显示；未具备项目应用标识或对应 TDLib 的构建保持不可用，Windows Debug 可保留原本机数据目录并改用独立设备凭据。观看记录、电影与电视剧资料、片库播放和续看尚未接线。Windows 开发播放器沿用相同视觉系统；当前业务与平台验收边界以 PRODUCT.md 为准，服务发布证据见 [Worker 发布记录](https://github.com/zhangheng2022/tg-cine-worker/blob/master/docs/deployment.md)。
 
 ## Colors
 
@@ -95,6 +95,11 @@ FSlider 显示时间与可访问进度，手势结束才发定位命令；加载
 - Don't 将 Windows 上的平台变体渲染、共用代码或打包入口记录为 Android/iOS 真机验收。
 
 实现：`lib/app/application.dart`、`lib/theme/theme.dart`、`lib/ui/features/` 与 `lib/ui/core/app_empty_state.dart`。架构见 [基础架构](docs/architecture.md)。
+
+### 历史视觉与阶段验收
+
+下文保留各阶段原始截图、测试数量与当时未完成项，不表示当前平台状态。后续 Android 真实片库与 iOS 原生验收见 [阶段验收](docs/library-acceptance.md)，v2 切换边界见 [迁移说明](docs/repository-split.md)。
+
 初始化版本的视觉证据保留于 `.impeccable/review/phone-{library,history,settings}-light.png` 与 `phone-{library,history,settings}-dark-large.png`。本轮登录/来源证据为 `.impeccable/review/telegram/{phone,wide}-{android,iOS}-{light,dark}-{1.0,2.0}-{login,sources}.png` 共 32 张；由 Windows 原生 Flutter 渲染平台变体，使用设计数据，无真实账号或媒体。逐张视觉审查未发现材料缺陷；这些画面不是 iOS 模拟器或真机截图。Android 真机设计数据 UI 流程与系统安全存储隔离记录读写/删除已通过，iOS 签名构建和真机未运行，移动端 TDLib 原生库尚未生成，不计为真实移动 Telegram 接入完成。
 
 渐进片库证据为 `.impeccable/review/library/{phone,wide}-{android,iOS}-{light,dark}-{1.0,2.0}-{library,details,failure}.png` 共 48 张 Windows 原生 Flutter 设计数据截图。独立 Impeccable 复核结论为 ship：320×568、两倍字体的失败态已将错误与重试纳入同一列表，详情返回为 48×48dp；48 张有效截图中的 24 对 Android/iOS 平台变体哈希一致，不能据此认定移动平台实际渲染相同。全量 199 项 Flutter 测试、静态分析与普通 Android Debug 构建通过。Android NE2210 真机及 Windows 的协议替身 → 真实加密 SQLite → Flutter 导入、去重与重开恢复通过；Windows 真实授权来源两次独立进程批次累计保存 25 个元数据条目，游标继续推进，历史未结束。上述数据接线与截图不替代真实移动 Telegram 导入；iOS Xcode 构建和真机、远程 CI 未运行。本轮不下载视频，不新增播放验收结论；详见 [历史导入记录](docs/library-import.md)。
