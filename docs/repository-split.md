@@ -14,6 +14,8 @@ Flutter 的六平台、lib、test、integration_test、tool、pubspec 和工程�
 
 ## 发布边界
 
-本轮不部署、不清理远程状态、不安装覆盖用户设备。公开仓库与本地测试完成后，仍须授权执行 Worker 状态销毁与发布，并使用新版客户端验证凭据、Telegram 连接和数据恢复。v1 历史成功记录不算作 v2 线上验收。
+拆仓初始阶段没有部署。2026-10-15 后续获得明确授权后，两个 PR 已合并，Worker 已执行旧状态销毁、密钥轮换及 v2 发布；[发布记录](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/deployment.md)包含版本和验收范围。客户端真实服务代码及原生 TDLib 已通过 Telegram DC1–DC5 握手，Android/Windows 公开配置构建已生成。
+
+本轮未安装覆盖用户设备，也未修改既有 Telegram 会话、媒体库或观看记录；真机升级后的数据恢复及完整影片播放尚未验收。v1 历史成功记录不算作 v2 线上验收。
 
 Graphify 的旧图包含已迁移路径，已从活动位置移至忽略缓存；后续需要时分别明确更新两仓图谱。

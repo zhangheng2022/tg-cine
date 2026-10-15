@@ -2,7 +2,7 @@
 
 个人 Telegram 电影与电视剧客户端，使用 Flutter / Dart 和 ForUI，中文界面同时适配手机与宽屏。
 
-本仓库只维护客户端。Flutter 工程位于仓库根目录；服务端独立维护于 [tg-cine-worker](https://github.com/zhangheng2022/tg-cine-worker)，采用 Cloudflare Workers + Vite，API 使用 TypeScript / Hono。两端仅使用 v2 协议，不兼容旧客户端；服务端上线前，新版默认连接不可用。
+本仓库只维护客户端。Flutter 工程位于仓库根目录；服务端独立维护于 [tg-cine-worker](https://github.com/zhangheng2022/tg-cine-worker)，采用 Cloudflare Workers + Vite，API 使用 TypeScript / Hono。两端仅使用 v2 协议，不兼容旧客户端；v2 服务已于 2026-10-15 上线，设备需要使用新版客户端。
 
 ## 开发与检查
 

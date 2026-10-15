@@ -1,6 +1,6 @@
 # 默认服务客户端
 
-默认服务地址仍为 `https://tg-cine.zhangheng.eu.org`。当前客户端只使用 v2；必须与新版 Worker 一起发布，不能连接旧版服务。服务端代码、配额与部署归属 [tg-cine-worker](https://github.com/zhangheng2022/tg-cine-worker)。
+默认服务地址仍为 `https://tg-cine.zhangheng.eu.org`。v2 Worker 已于 2026-10-15 上线，当前客户端只使用 v2，旧版客户端无法继续连接。服务端代码、配额与部署归属 [tg-cine-worker](https://github.com/zhangheng2022/tg-cine-worker)。
 
 客户端通过 `GET /v2/config` 获取官方动态 CIDR 策略与同源 WSS 地址，通过 `POST /v2/devices` 激活，`/v2/devices/refresh` 刷新，`/v2/devices/revoke` 撤销。访问凭据仅在内存，刷新凭据由系统安全存储按域名、端口及 v2 隔离。
 
@@ -16,4 +16,4 @@
 flutter build apk --debug --dart-define-from-file=.cache/deployment/flutter-public-defines.json
 ```
 
-TDLib 安装与校验见 [移动原生构建](mobile-native.md)。Windows Debug 可以通过原有本机配置保留开发会话；这些路径不是公开构建输入。新版线上与真机结果须在部署后记录，本次拆仓不复用 v1 成功记录作为 v2 验收。
+TDLib 安装与校验见 [移动原生构建](mobile-native.md)。Windows Debug 可以通过原有本机配置保留开发会话；这些路径不是公开构建输入。2026-10-15 已验证客户端真实配置解析、临时设备激活/刷新/撤销及 TDLib 经 v2 中转的五个 DC 握手，使用模拟安全存储隔离临时凭据，没有读取现有账号库。Android Debug 和 Windows Release 公开配置构建通过；未安装覆盖设备，整部影片播放和真机数据恢复尚未验收。
