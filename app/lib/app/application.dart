@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show AppExitResponse;
 
 import 'package:flutter/foundation.dart';
 
@@ -8,6 +9,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 import '../data/repositories/local_settings_repository.dart';
+import '../data/services/telegram/telegram_factory_stub.dart'
+    if (dart.library.io) '../data/services/telegram/telegram_factory_io.dart';
+import '../domain/ports/telegram_repository.dart';
+import '../domain/ports/media_library_repository.dart';
+import '../ui/features/library/view_models/library_view_model.dart';
+import '../ui/features/sources/view_models/sources_view_model.dart';
 import '../domain/models/app_settings.dart';
 import '../domain/ports/settings_repository.dart';
 import '../domain/ports/playback.dart';
@@ -25,12 +32,16 @@ class Application extends StatefulWidget {
     this.settingsRepository,
     this.playback,
     this.videoSurface,
+    this.telegramRepository,
+    this.libraryRepository,
     super.key,
   });
 
   final SettingsRepository? settingsRepository;
   final Playback? playback;
   final Widget? videoSurface;
+  final TelegramRepository? telegramRepository;
+  final MediaLibraryRepository? libraryRepository;
 
   @override
   State<Application> createState() => _ApplicationState();
@@ -40,6 +51,9 @@ class _ApplicationState extends State<Application> {
   late final SettingsViewModel _settings;
   PlayerViewModel? _player;
   Widget? _videoSurface;
+  SourcesViewModel? _sources;
+  LibraryViewModel? _library;
+  AppLifecycleListener? _lifecycle;
 
   @override
   void initState() {
@@ -49,6 +63,32 @@ class _ApplicationState extends State<Application> {
           LocalSettingsRepository(SharedPreferencesAsync()),
     );
     unawaited(_settings.load());
+    final telegram = widget.telegramRepository ?? createTelegramRepository();
+    if (telegram != null) {
+      _sources = SourcesViewModel(telegram);
+      final MediaLibraryRepository? media =
+          widget.libraryRepository ??
+          (telegram is MediaLibraryRepository
+              ? telegram as MediaLibraryRepository
+              : null);
+      if (media != null) _library = LibraryViewModel(media, telegram);
+      unawaited(_sources!.connect());
+      _lifecycle = AppLifecycleListener(
+        onPause: () => _library?.activate(false),
+        onHide: () => _library?.activate(false),
+        onResume: () => _library?.activate(true),
+        onExitRequested: () async {
+          try {
+            await _library?.pause();
+            _library?.activate(false);
+            await _sources!.close();
+          } catch (_) {
+            // The client cleans up its bridge and lock even if TDLib closing fails.
+          }
+          return AppExitResponse.exit;
+        },
+      );
+    }
     if (widget.playback != null) {
       _player = PlayerViewModel(widget.playback!);
       _videoSurface = widget.videoSurface;
@@ -104,6 +144,8 @@ class _ApplicationState extends State<Application> {
         settings: _settings,
         player: _player,
         videoSurface: _videoSurface,
+        sources: _sources,
+        library: _library,
       ),
     ),
   );
@@ -112,6 +154,9 @@ class _ApplicationState extends State<Application> {
   void dispose() {
     _settings.dispose();
     _player?.dispose();
+    _sources?.dispose();
+    _library?.dispose();
+    _lifecycle?.dispose();
     super.dispose();
   }
 }

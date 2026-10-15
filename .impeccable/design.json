@@ -1,16 +1,103 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-10T16:46:17.2059838+08:00",
+  "generatedAt": "2026-10-14T17:23:58.8632421+08:00",
   "title": "Design System: TG Cine",
-  "extensions": {},
+  "extensions": {
+    "breakpoints": [
+      {
+        "value": "600dp",
+        "name": "bottom-navigation"
+      },
+      {
+        "value": "900dp",
+        "name": "large-text-bottom-navigation"
+      },
+      {
+        "value": "1024dp",
+        "name": "expanded-sidebar"
+      },
+      {
+        "value": "860dp",
+        "name": "library-details-preview-text-scale-below-1.6"
+      }
+    ]
+  },
   "components": [
-    {"name":"Primary Button","kind":"button","refersTo":"button-primary","description":"浅色模式静态浏览器示意；Flutter 状态和超级椭圆形状以 ForUI 为准。","html":"<button class=\"ds-primary\">前往设置</button>","css":".ds-primary{background:#171717;color:#fafafa;border:0;border-radius:10px;padding:14px 12px;min-height:48px;font:500 16px/1 Inter,sans-serif}.ds-primary:hover{cursor:pointer}.ds-primary:focus-visible{outline:auto}.ds-primary:active{cursor:pointer}"},
-    {"name":"Bottom Navigation","kind":"nav","description":"浅色模式标签与选中状态示意；实际导航包含 Lucide 图标和底部安全区域。","html":"<nav class=\"ds-nav\" aria-label=\"主导航\"><button aria-current=\"page\">片库</button><button>记录</button><button>设置</button></nav>","css":".ds-nav{display:flex;justify-content:space-around;border-top:1px solid #e5e5e5;background:#fff}.ds-nav button{background:transparent;border:0;padding:5px;color:#737373;font:400 10px/1.5 Inter,sans-serif}.ds-nav [aria-current]{color:#171717;font-weight:700}.ds-nav button:hover{cursor:pointer}.ds-nav button:focus-visible{outline:auto}"},
-    {"name":"Connection Status Group","kind":"card","description":"无交互的浅色状态分组示意；实际布局由 FTileGroup/FTile 提供。","html":"<div class=\"ds-group\"><div>Telegram <span>未连接</span></div><div>中转服务 <span>未配置</span></div></div>","css":".ds-group{border:1px solid #e5e5e5;border-radius:10px;overflow:hidden;background:#fff;color:#0a0a0a;font:400 16px/1.5 Inter,sans-serif}.ds-group>div{padding:14.5px 15px;display:flex;justify-content:space-between}.ds-group>div+div{border-top:1px solid #e5e5e5}.ds-group span{color:#737373}"}
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "浅色模式静态浏览器示意；Flutter 状态和超级椭圆形状以 ForUI 为准。",
+      "html": "<button class=\"ds-primary\">保存选择</button>",
+      "css": ".ds-primary{background:#171717;color:#fafafa;border:0;border-radius:10px;padding:14px 12px;min-height:48px;font:500 16px/1 Inter,sans-serif}.ds-primary:hover{cursor:pointer}.ds-primary:focus-visible{outline:auto}.ds-primary:active{cursor:pointer}"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "description": "四项底部导航的浅色浏览器示意；实际图标、安全区域、600/1024dp 侧栏及大字体回退以 Flutter 为准。",
+      "html": "<nav class=\"ds-nav\" aria-label=\"主导航\"><button aria-current=\"page\">片库</button><button>记录</button><button>来源</button><button>设置</button></nav>",
+      "css": ".ds-nav{display:flex;justify-content:space-around;border-top:1px solid #e5e5e5;background:#fff}.ds-nav button{background:transparent;border:0;padding:5px;color:#737373;font:400 10px/1.5 Inter,sans-serif}.ds-nav [aria-current]{color:#171717;font-weight:700}.ds-nav button:hover{cursor:pointer}.ds-nav button:focus-visible{outline:auto}"
+    },
+    {
+      "name": "Connection Status Group",
+      "kind": "card",
+      "description": "浅色状态分组的设计数据示意；服务与 Telegram 登录分开显示，有接入 ViewModel 时 Telegram 行可进入来源页，默认服务行只展示连接中、已连接或暂不可用。实际主题、滚动和字体缩放以 Flutter 为准。",
+      "html": "<div class=\"ds-group\"><div>Telegram <span>未连接</span></div><div>默认服务 <span>已连接</span></div></div>",
+      "css": ".ds-group{border:1px solid #e5e5e5;border-radius:10px;overflow:hidden;background:#fff;color:#0a0a0a;font:400 16px/1.5 Inter,sans-serif}.ds-group>div{padding:14.5px 15px;display:flex;justify-content:space-between}.ds-group>div+div{border-top:1px solid #e5e5e5}.ds-group span{color:#737373}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "description": "加载更多与未选外观按钮的浅色浏览器示意；实际状态以 FButton 为准。",
+      "html": "<button class=\"ds-outline\">加载更多来源</button>",
+      "css": ".ds-outline{background:#fff;color:#0a0a0a;border:1px solid #e5e5e5;border-radius:10px;padding:14px 12px;min-height:48px;font:500 16px/1 Inter,sans-serif}.ds-outline:hover{cursor:pointer}.ds-outline:focus-visible{outline:auto}.ds-outline:active{cursor:pointer}.ds-outline:disabled{opacity:.5;cursor:default}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "description": "退出确认和取消的浅色浏览器示意；实际主题状态与交互以 FButton 为准。",
+      "html": "<button class=\"ds-ghost\">退出登录</button>",
+      "css": ".ds-ghost{background:transparent;color:#0a0a0a;border:0;border-radius:10px;padding:14px 12px;min-height:48px;font:500 16px/1 Inter,sans-serif}.ds-ghost:hover{cursor:pointer}.ds-ghost:focus-visible{outline:auto}.ds-ghost:active{cursor:pointer}.ds-ghost:disabled{opacity:.5;cursor:default}"
+    },
+    {
+      "name": "Source Search Field",
+      "kind": "input",
+      "description": "带中文标签的浅色浏览器示意；FTextField 的精确形状、主题和输入状态以 Flutter 为准。",
+      "html": "<label class=\"ds-field\">搜索已加载的来源<input type=\"search\" aria-label=\"搜索已加载的来源\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:8px;color:#0a0a0a;font:400 16px/1.5 Inter,sans-serif}.ds-field input{padding:12px;border:1px solid #e5e5e5;border-radius:10px;background:#fff;color:#0a0a0a;font:inherit}.ds-field input:hover{cursor:text}.ds-field input:focus-visible{outline:auto}.ds-field input:disabled{opacity:.5}"
+    },
+    {
+      "name": "Source Selection",
+      "kind": "custom",
+      "description": "来源勾选行示意，使用明确设计数据；实际 FCheckbox、两行省略和选择保持由 Flutter 提供。",
+      "html": "<label class=\"ds-source\"><input type=\"checkbox\" checked>布局测试来源</label>",
+      "css": ".ds-source{display:flex;align-items:center;gap:8px;min-height:48px;color:#0a0a0a;font:400 16px/1.5 Inter,sans-serif}.ds-source input{accent-color:#171717}.ds-source:hover{cursor:pointer}.ds-source input:focus-visible{outline:auto}.ds-source input:disabled{opacity:.5}"
+    },
+    {
+      "name": "Original File Row",
+      "kind": "custom",
+      "description": "浅色原文件行的设计数据示意；真实 FButton、两行文件名、来源省略与可换行大小/时长以 Flutter 为准，不提供片库播放按钮。",
+      "html": "<button class=\"ds-file\"><strong>布局测试文件.mp4</strong><span>布局测试来源</span><div><span>128.0 MiB</span><span>时长未知</span></div></button>",
+      "css": ".ds-file{display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;min-height:88px;padding:14px 12px;border:0;border-radius:10px;background:transparent;color:#0a0a0a;text-align:left;font:400 18px/1.75 Inter,sans-serif}.ds-file strong{font-weight:600}.ds-file div{display:flex;flex-wrap:wrap;gap:4px 12px}.ds-file:hover{cursor:pointer}.ds-file:focus-visible{outline:auto}.ds-file:active{cursor:pointer}"
+    },
+    {
+      "name": "Import Source Status",
+      "kind": "custom",
+      "description": "浅色来源导入状态的设计数据示意；真实状态、暂停/继续、liveRegion 与独立滚动列表以 Flutter 为准。只显示保存数量，不编造百分比。",
+      "html": "<section class=\"ds-import\"><strong>布局测试来源</strong><span>已保存 25 个文件</span><span class=\"ds-import-state\" aria-live=\"polite\">已暂停</span><button>继续整理</button></section>",
+      "css": ".ds-import{display:flex;flex-direction:column;align-items:flex-start;gap:6px;color:#0a0a0a;font:400 18px/1.75 Inter,sans-serif}.ds-import strong{font-weight:600}.ds-import-state{color:#737373;font-size:16px}.ds-import button{min-height:48px;padding:14px 12px;border:0;border-radius:10px;background:#171717;color:#fafafa;font:500 16px/1 Inter,sans-serif}.ds-import button:hover{cursor:pointer}.ds-import button:focus-visible{outline:auto}.ds-import button:active{cursor:pointer}.ds-import button:disabled{opacity:.5;cursor:default}"
+    }
   ],
   "narrative": {
-    "overview": "沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。不限制平台，手机端界面优先，中文（zh_CN）界面，明暗模式跟随系统，图标使用 ForUI Lucide。\n当前仅有片库、观看记录、设置三个初始化页面；Telegram 登录、播放和中转尚未接入。",
-    "dos": ["Do 使用当前 ForUI 主题、默认组件状态及 Lucide 图标，保留安全区域、字体缩放和滚动。"],
-    "donts": ["Don't 添加虚构影片、连接成功状态或未实现功能的可点击入口。"]
+    "overview": "沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。产品目标保留 Android、iOS、Web、Windows、macOS、Linux 六个平台，手机与宽屏界面须同时适配，中文（zh_CN）界面，图标使用 ForUI Lucide。外观可选跟随系统、浅色或深色，并保存在本机。\n片库、记录、来源和设置组成四项导航；原生客户端通过内置默认服务接入应用内登录、来源选择与原文件片库。默认服务状态与 Telegram 登录状态分开显示；未具备项目应用标识或对应 TDLib 的构建保持不可用，Windows Debug 可保留原本机数据目录并改用独立设备凭据。观看记录、电影与电视剧资料、片库播放和续看尚未接线。Windows 开发播放器沿用相同视觉系统；当前业务与平台验收边界以 PRODUCT.md 为准，线上默认服务结果见 docs/public-service.md。",
+    "dos": [
+      "Do 使用当前 ForUI 主题、默认组件状态及 Lucide 图标，保留安全区域、字体缩放和滚动。",
+      "Do 按可用窗口宽度适配导航、表单和固定保存区，同时验证手机、宽屏、明暗主题与两倍字体。",
+      "Do 清空已提交或已切换步骤的敏感输入，搜索时保留来源选择，退出登录再次确认。"
+    ],
+    "donts": [
+      "Don't 添加虚构影片、连接成功状态或未实现功能的可点击入口。",
+      "Don't 将 Windows 上的平台变体渲染、共用代码或打包入口记录为 Android/iOS 真机验收。"
+    ]
   }
 }

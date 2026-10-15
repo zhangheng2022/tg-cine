@@ -1,6 +1,32 @@
 # Worker 实验部署记录
 
-更新时间：2026-10-14。用户已明确授权部署及优化执行；本次部署工作区中的实验实现，未提交 Git，也未修改既有 TGvideo Worker。
+更新时间：2026-10-15。用户已明确授权部署及优化执行；本次部署工作区中的实验实现，未提交 Git，也未修改既有 TGvideo Worker。
+
+## 当前部署：官方动态网段
+
+2026-10-15 按用户要求删除服务端固定 IP 列表，当前版本 `f89bd7b2-7834-4aba-97ad-998ad7efb75a` 已核实承接 100% 流量。官方 HTTPS CIDR 按需刷新并在边缘缓存一小时，端口仅 443；失败或过期返回 503，不回退固定目标。签名密钥、会话、设备凭据、取消激活次数上限及流量预算保持原状。
+
+无系统代理配置请求返回 200、14 条网段，无 `targets` 或激活次数字段；三个官方目标完成 MTProto `resPQ` 与 nonce 验证，临时凭据已撤销。新版正常 Android 应用经默认服务完成手机号 → 验证码 → 两步验证 → ready，无界面错误或目标拒绝；没有读取或记录验证信息。
+
+64 项 Worker、234 项 Flutter 测试及分析、格式、类型、dry-run、1 MiB 本地联调通过；最终中转超时调整后 11 项回归通过，APK 构建并安装成功。Code Review 工具没有本地 diff 接口，本次按源码和差异人工审查。旧客户端需要更新，iOS 原生、Windows 新产物、移动来源重开、远程 CI 和播放未重新验收。详见 [动态目标策略](telegram-network-policy.md)。以下为历史部署记录。
+
+## 此前公共接入版本（历史）
+
+此前版本为 `fe375f67-d5b4-4ca8-970d-29071166bc0d`，当时已核实承接 100% 流量。2026-10-15 Android 真机手机号提交后提示连接失败，运行时发现桥接拒绝 `91.108.56.164:443`。核对 [Telegram 官方 CIDR](https://core.telegram.org/resources/cidr.txt) 后只补充该固定地址，目标数从 11 增至 12；源码、Secret、配额及取消激活次数上限的行为不变。首轮配置核验超时，版本 `53e66901-fc3f-4e4a-9e8e-293c8f392bf0` 未带入新目标，随后由 `fe375f67` 纠正。
+
+58 项 Worker 测试与实际配置 dry-run 通过。独立设备凭据下新目标 WSS/TCP 的 `req_pq_multi → resPQ` 及 nonce 校验通过，2085 ms，测试凭据已撤销。手机重开后 `phone`、默认服务及中转就绪，无错误、无拒绝目标，新目标累计上下行 2192 / 6464 字节。等待用户在应用内重试手机号步骤；上述握手与字节数不代表已成功发送验证码。脱敏证据见已忽略的 `phone-target-deployment.json`、`phone-target-edge.json`。
+
+此前版本 `440cabc4-526d-4955-9a9e-9739ccc6dbf1`，已核实承接 100% 流量。2026-10-14 按用户要求删除同地址和全服务每日激活次数上限，公开配置移除两项次数字段；保留接口速率、字节预算、并发、11 个固定目标和现有签名密钥。58 项 Worker 测试、类型、格式、默认及实际配置 dry-run 通过。线上无系统代理请求核实配置 `200`、激活 `201`、刷新 `200`、旧访问凭据 `401`、新访问凭据缺 Upgrade `426`、撤销 `204` 及撤销后刷新 `401`；验证凭据已撤销，无需重装客户端。脱敏证据为已忽略的 `enrollment-unlimited-deployment.json` 与 `enrollment-unlimited-edge.json`。
+
+此前版本 `253abd13-434d-4883-b23c-f81eea6193cd`。2026-10-14 Android 默认接入遇到同地址激活额度耗尽，将该上限从每日 3 调整为 8，并在公开配置返回 `addressEnrollments`；全局每日 32、字节预算、并发与签名密钥保持不变。58 项 Worker 测试、类型、格式及 dry-run 通过，线上公开额度复核及 Android 真机默认中转 `pingProxy` 与手机号页面通过。
+
+此前版本 `c00f6978-5de0-47ab-aaaa-e02432ae3abe` 补齐 Windows 实际请求的 `149.154.175.55:443`，核对 [Telegram 官方 CIDR](https://core.telegram.org/resources/cidr.txt) 后单独加入，公开配置的 11 个目标已实测可读取。Windows 已恢复到手机号授权页，用户确认输入框可见。此前十目标版本及验收如下。
+
+2026-10-14 已沿用原域名部署 `832a1d98-b3ff-44e4-b8e3-82d0b8323ede`，已查证承接 100% 流量。启用 `PUBLIC_SERVICE_ENABLED=true`、安装与全局 SQLite Durable Objects、接口速率及 `PUBLIC_SIGNING_KEY` Secret；保留原十个固定目标。公开模式拒绝共享开发令牌。原生公共配置、签发/刷新/撤销、拒绝失效凭据和五个 DC 握手在线通过；Windows 应用已恢复原真实会话和 25 条片库。58 项 Worker 测试及相关检查通过，源码摘要与脱敏证据保存为已忽略的 `public-deployment-manifest.json`，详见 [默认服务](public-service.md)。
+
+实际配置为已忽略的 `.cache/deployment/wrangler.public.json`，签名密钥和部署 Secret 文件受原目录 ACL 保护；旧 `wrangler.json` 与下文旧版本只保留为历史，不能直接覆盖公共版本。再次部署使用 `npx.cmd wrangler deploy --config ../.cache/deployment/wrangler.public.json`，Secret 另通过 Wrangler 上传，不在命令或日志中输出值。停止新中转在同一配置部署 `--var RELAY_ENABLED:false`，保留 DO 绑定及迁移；已建立连接最多持续 15 分钟。
+
+以下为此前私有实验部署的历史证据，不表示公共版本使用共享令牌，也不替代本次公共接口实测。
 
 2026-10-14 部署脱敏播放计时，版本 `0e133901-bbc3-4067-bc4d-94aea5b8f7ff`；已核对该版本承接 100% 流量及对应源码摘要。49 项运行时测试、类型检查和实际配置 dry-run 通过。只增加随机连接标识和关闭时的数字统计；配额、白名单和域名不变。线上 tail 连接超时，尚未获得同轮边缘统计；以下握手与域名检测是此前记录，不视作本轮重新验收。详见 [稳定性验证](playback-stability.md)。
 
@@ -10,7 +36,7 @@
 - 自定义域名：[https://tg-cine.zhangheng.eu.org](https://tg-cine.zhangheng.eu.org/health)，使用用户确认的项目子域名；临时 `tg-cine.huiyunda.pl` 绑定已移除。
 - 默认地址：[https://tg-cine-worker.zhangheng.workers.dev](https://tg-cine-worker.zhangheng.workers.dev/health)。
 - 中转入口：`wss://tg-cine.zhangheng.eu.org/v1/tunnel?v=1&target=<ID>`，需 `Authorization: Bearer <本机令牌>`；逐帧 ACK 契约见 [Worker 架构](worker-architecture.md)。
-- 线上 `RELAY_ENABLED=true`；仓库默认配置仍为 `false` 和空白名单。日志开启，trace 采样为 1%；Preview URL 关闭。
+- 线上 `RELAY_ENABLED=true`；仓库默认配置仍为 `false`，现行目标策略见顶部；以下固定目标表仅为历史记录。日志开启，trace 采样为 1%；Preview URL 关闭。
 
 仅允许以下固定公共 IPv4 目标；包含 TDLib 预设地址和运行时实际选择的四个补充地址。媒体 DC 的实际列表仍需取样核对。
 

@@ -12,6 +12,7 @@ const runtimeDir = join(root, '.wrangler');
 await mkdir(runtimeDir, { recursive: true });
 const temp = await mkdtemp(join(runtimeDir, 'relay-proof-'));
 const configPath = join(temp, 'wrangler.json');
+const entryPath = join(temp, 'entry.ts');
 const tokenPath = join(temp, 'token.txt');
 const clients = new Set();
 const echo = createServer((socket) => {
@@ -32,17 +33,30 @@ try {
 	await new Promise((resolve) => reservation.close(resolve));
 	const token = randomBytes(32).toString('base64url');
 	await writeFile(tokenPath, token);
+	// This isolated transport fixture can reach only its own ephemeral TCP echo server.
+	await writeFile(
+		entryPath,
+		`
+import { openRelay } from ${JSON.stringify(join(root, 'src/relay.ts').replaceAll('\\', '/'))};
+import { authorize } from ${JSON.stringify(join(root, 'src/auth.ts').replaceAll('\\', '/'))};
+export default { async fetch(request, env, ctx) {
+  if (new URL(request.url).pathname === '/health') return Response.json({capabilities:{tunnel:true}});
+  const denied = await authorize(request, env.RELAY_TOKEN);
+  if (denied) return denied;
+  return openRelay({hostname:'127.0.0.1',port:${echoPort}}, ctx);
+}};
+`,
+	);
 	await writeFile(
 		configPath,
 		JSON.stringify({
 			name: 'tg-cine-local-relay-proof',
-			main: join(root, 'src/index.ts'),
+			main: entryPath,
 			compatibility_date: '2026-10-10',
 			compatibility_flags: ['nodejs_compat'],
 			vars: {
 				RELAY_ENABLED: 'true',
 				RELAY_TOKEN: token,
-				RELAY_TARGETS: JSON.stringify({ local_echo: { hostname: '127.0.0.1', port: echoPort } }),
 			},
 		}),
 	);

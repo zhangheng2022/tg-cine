@@ -103,6 +103,14 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
   DESTINATION "${INSTALL_BUNDLE_DATA_DIR}" COMPONENT Runtime)
 
 # Install the AOT library on non-Debug builds only.
+set(TDJSON_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/TDLib/tdjson.dll")
+if(EXISTS "${TDJSON_LIBRARY}")
+  file(SHA256 "${TDJSON_LIBRARY}" TDJSON_SHA256)
+  if(NOT TDJSON_SHA256 STREQUAL "b516c0ee7b72a21c404aad6c2dbfaf24d2e952e840394b5172291c7f578ed3c3")
+    message(FATAL_ERROR "TDLib artifact does not match the verified Windows build")
+  endif()
+  install(FILES "${TDJSON_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}" COMPONENT Runtime)
+endif()
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)

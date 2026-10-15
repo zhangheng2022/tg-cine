@@ -28,6 +28,8 @@ jobs:
       - run: dart format --output=none --set-exit-if-changed lib test tool integration_test
       - run: flutter analyze
       - run: flutter test
+      - name: Verify mobile native artifact installer
+        run: python3 -m unittest discover -s tool -p 'test_*.py'
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
@@ -73,11 +75,13 @@ jobs:
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
       - name: Install Linux build dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev libmpv-dev libepoxy-dev
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev libmpv-dev libepoxy-dev libsecret-1-dev
       - run: flutter pub get
       - name: Verify Windows private session
         if: runner.os == 'Windows'
-        run: flutter test test/tool/windows_session_test.dart
+        run: flutter test test/tool/windows_session_test.dart test/data/services/telegram/windows_source_store_test.dart
+      - name: Verify encrypted media storage on native hosts
+        run: flutter test test/data/repositories/sqlite_media_repository_test.dart
       - run: flutter build ${{ matrix.target }}
 
   worker:

@@ -1,5 +1,6 @@
 import { createExecutionContext, env, SELF } from 'cloudflare:test';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { TELEGRAM_POLICY_CACHE_KEY } from '../src/targets';
 import worker from '../src/index';
 
 const token = 'local-test-token';
@@ -7,10 +8,13 @@ const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 const configuredEnv: Env = {
 	...env,
 	RELAY_TOKEN: token,
-	RELAY_TARGETS: JSON.stringify({ dc2: { hostname: 'upstream.example', port: 443 } }),
+	RELAY_ENABLED: 'true',
 };
 
-function tunnelRequest(query = 'v=1&target=dc2', headers: Record<string, string> = {}): Request<unknown, IncomingRequestCfProperties> {
+function tunnelRequest(
+	query = 'v=1&target=ip4_5b6c388b',
+	headers: Record<string, string> = {},
+): Request<unknown, IncomingRequestCfProperties> {
 	return new IncomingRequest(`https://worker.example/v1/tunnel?${query}`, {
 		headers: { Authorization: `Bearer ${token}`, Upgrade: 'websocket', ...headers },
 	});
@@ -57,19 +61,19 @@ describe('中转请求边界', () => {
 		},
 	);
 	it.each([
-		'target=dc2',
+		'target=ip4_5b6c388b',
 		'v=1',
-		'v=1&v=1&target=dc2',
-		'v=1&target=dc2&target=dc2',
-		'v=1&target=dc2&token=secret',
-		'v=1&target=dc2&hostname=evil.example',
+		'v=1&v=1&target=ip4_5b6c388b',
+		'v=1&target=ip4_5b6c388b&target=ip4_5b6c388b',
+		'v=1&target=ip4_5b6c388b&token=secret',
+		'v=1&target=ip4_5b6c388b&hostname=evil.example',
 	])('拒绝歧义和额外查询参数 %s', async (query) => {
 		const response = await worker.fetch(tunnelRequest(query), configuredEnv, createExecutionContext());
 		expect(response.status).toBe(400);
 		expect(await response.json()).toEqual({ error: { code: 'INVALID_REQUEST' } });
 	});
 	it('拒绝不支持的协议', async () => {
-		const response = await worker.fetch(tunnelRequest('v=2&target=dc2'), configuredEnv, createExecutionContext());
+		const response = await worker.fetch(tunnelRequest('v=2&target=ip4_5b6c388b'), configuredEnv, createExecutionContext());
 		expect(response.status).toBe(400);
 		expect(await response.json()).toEqual({ error: { code: 'UNSUPPORTED_PROTOCOL' } });
 	});
@@ -78,24 +82,24 @@ describe('中转请求边界', () => {
 		expect(response.status).toBe(400);
 		expect(await response.json()).toEqual({ error: { code: 'INVALID_TARGET' } });
 	});
-	it.each(['{}', JSON.stringify({ other: { hostname: 'upstream.example', port: 443 } })])('拒绝非白名单目标', async (targets) => {
-		const response = await worker.fetch(tunnelRequest(), { ...configuredEnv, RELAY_TARGETS: targets }, createExecutionContext());
-		expect(response.status).toBe(403);
-		expect(await response.json()).toEqual({ error: { code: 'TARGET_NOT_ALLOWED' } });
-	});
-	it.each([
-		'{',
-		'null',
-		'[]',
-		JSON.stringify({ dc2: { hostname: 'https://evil.example', port: 443 } }),
-		JSON.stringify({ dc2: { hostname: 'upstream.example', port: 0 } }),
-		JSON.stringify({ dc2: { hostname: 'upstream.example', port: 65536 } }),
-		JSON.stringify({ dc2: { hostname: 'upstream.example', port: 443.5 } }),
-		JSON.stringify({ dc2: { hostname: 'upstream.example', port: 443, extra: true } }),
-	])('配置损坏时关闭入口', async (targets) => {
-		const response = await worker.fetch(tunnelRequest(), { ...configuredEnv, RELAY_TARGETS: targets }, createExecutionContext());
-		expect(response.status).toBe(503);
-		expect(await response.json()).toEqual({ error: { code: 'TARGETS_NOT_CONFIGURED' } });
+	it.each(['ip4_08080808', 'ip4_7f000001', 'ip6_00000000000000000000000000000001'])(
+		'rejects destinations outside official ranges: %s',
+		async (target) => {
+			const response = await worker.fetch(tunnelRequest(`v=1&target=${target}`), configuredEnv, createExecutionContext());
+			expect(response.status).toBe(403);
+			expect(await response.json()).toEqual({ error: { code: 'TARGET_NOT_ALLOWED' } });
+		},
+	);
+	it('official policy unavailable rejects before opening the tunnel', async () => {
+		await caches.default.delete(TELEGRAM_POLICY_CACHE_KEY);
+		const source = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('unavailable', { status: 503 }));
+		try {
+			const response = await worker.fetch(tunnelRequest(), configuredEnv, createExecutionContext());
+			expect(response.status).toBe(503);
+			expect(await response.json()).toEqual({ error: { code: 'TELEGRAM_POLICY_UNAVAILABLE' } });
+		} finally {
+			source.mockRestore();
+		}
 	});
 	it('拒绝缺少 WebSocket 升级标头', async () => {
 		const response = await worker.fetch(tunnelRequest(undefined, { Upgrade: '' }), configuredEnv, createExecutionContext());
@@ -103,7 +107,7 @@ describe('中转请求边界', () => {
 		expect(await response.json()).toEqual({ error: { code: 'WEBSOCKET_REQUIRED' } });
 	});
 	it('合法请求明确返回 501，不创建 WebSocket', async () => {
-		const response = await worker.fetch(tunnelRequest(), configuredEnv, createExecutionContext());
+		const response = await worker.fetch(tunnelRequest(), { ...configuredEnv, RELAY_ENABLED: 'false' }, createExecutionContext());
 		expect(response.status).toBe(501);
 		expect(response.webSocket).toBeNull();
 		expect(response.headers.get('Cache-Control')).toBe('no-store');

@@ -6,7 +6,14 @@ import 'dart:typed_data';
 
 /// A loopback-only SOCKS5 bridge for the native TDLib feasibility test.
 class RelayBridge {
-  RelayBridge._(this._server, this._relay, this._token, this._targets) {
+  RelayBridge._(
+    this._server,
+    this._relay,
+    this._token,
+    this._targets,
+    this._accessToken,
+    this._resolveTarget,
+  ) {
     _subscription = _server.listen((socket) {
       if (_clients.length >= 6) {
         _capacityRejections++;
@@ -21,6 +28,8 @@ class RelayBridge {
   final ServerSocket _server;
   final Uri _relay;
   final String _token;
+  final Future<String> Function()? _accessToken;
+  final Future<String?> Function(String host, int port)? _resolveTarget;
   final Map<(String, int), String> _targets;
   final _clients = <Socket>{};
   final _webSockets = <WebSocket>{};
@@ -43,8 +52,10 @@ class RelayBridge {
 
   static Future<RelayBridge> start({
     required Uri relay,
-    required String token,
-    required Map<(String, int), String> targets,
+    String token = '',
+    Future<String> Function()? accessToken,
+    Map<(String, int), String> targets = const {},
+    Future<String?> Function(String host, int port)? resolveTarget,
   }) async {
     if (!(relay.scheme == 'wss' ||
             (relay.scheme == 'ws' && relay.host == '127.0.0.1')) ||
@@ -52,9 +63,9 @@ class RelayBridge {
         relay.hasQuery ||
         relay.hasFragment ||
         relay.path != '/v1/tunnel' ||
-        token.isEmpty ||
+        (token.isEmpty && accessToken == null) ||
         RegExp(r'\s').hasMatch(token) ||
-        targets.isEmpty ||
+        (targets.isEmpty && resolveTarget == null) ||
         targets.entries.any(
           (entry) =>
               entry.key.$1.isEmpty ||
@@ -65,7 +76,14 @@ class RelayBridge {
       throw ArgumentError('Invalid relay bridge configuration');
     }
     final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-    return RelayBridge._(server, relay, token, Map.unmodifiable(targets));
+    return RelayBridge._(
+      server,
+      relay,
+      token,
+      Map.unmodifiable(targets),
+      accessToken,
+      resolveTarget,
+    );
   }
 
   Future<void> close() async {
@@ -110,7 +128,9 @@ class RelayBridge {
       }
       final port = await input.read(2);
       final address = (host, (port[0] << 8) | port[1]);
-      final target = _targets[address];
+      final target = _resolveTarget != null
+          ? await _resolveTarget(host, address.$2)
+          : _targets[address];
       if (target == null) {
         _lastRejectedTarget = address;
         client.add([5, 2, 0, 1, 0, 0, 0, 0, 0, 0]);
@@ -145,7 +165,7 @@ class RelayBridge {
             .replace(queryParameters: {'v': '1', 'target': target})
             .toString(),
         headers: {
-          'Authorization': 'Bearer $_token',
+          'Authorization': 'Bearer ${await _accessToken?.call() ?? _token}',
           'X-TG-Cine-Trace': traceId,
         },
         customClient: _httpClient,
@@ -155,7 +175,8 @@ class RelayBridge {
           if (finished || _closed) unawaited(socket.close());
         }, onError: (Object _) {}),
       );
-      upstream = await connection.timeout(const Duration(seconds: 6));
+      // Edge policy refresh and upstream TCP dial can each take five seconds.
+      upstream = await connection.timeout(const Duration(seconds: 15));
       if (_closed) return;
       _webSockets.add(upstream);
       upstream.pingInterval = const Duration(seconds: 15);

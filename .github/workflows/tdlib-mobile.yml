@@ -1,0 +1,35 @@
+name: Build mobile TDLib
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: android
+          - os: macos-latest
+            platform: ios
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Android build tools
+        if: matrix.platform == 'android'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gperf cmake ninja-build g++ make perl php default-jdk
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'ndk;28.2.13676358' 'cmake;3.22.1'
+      - name: iOS build tools
+        if: matrix.platform == 'ios'
+        run: brew install gperf cmake coreutils
+      - run: bash app/tool/build_mobile_tdlib.sh ${{ matrix.platform }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tdlib-${{ matrix.platform }}-c15d3f5
+          path: .cache/native/mobile-build/${{ matrix.platform }}/package/

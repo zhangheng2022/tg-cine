@@ -7,3 +7,9 @@
 **/*.jks
 **/*.keystore
 /.cache/
+app/android/app/src/main/jniLibs/**/*.so
+app/ios/TDLib/Frameworks/
+app/windows/TDLib/*.dll
+app/tool/telegram-*.json
+app/tool/__pycache__/
+/app/android/build/

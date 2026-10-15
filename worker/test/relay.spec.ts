@@ -3,12 +3,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MAX_FRAME_BYTES, MAX_PENDING_BYTES, MAX_PENDING_FRAMES, type RelaySocket } from '../src/relay';
 import { handleTunnel } from '../src/tunnel';
 
+vi.mock('../src/targets', async (original) => ({
+	...(await original<typeof import('../src/targets')>()),
+	resolveTarget: async () => ({ hostname: 'upstream.example', port: 443 }),
+}));
+
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 const configured: Env = {
 	...env,
 	RELAY_ENABLED: 'true',
 	RELAY_TOKEN: 'test-token',
-	RELAY_TARGETS: '{"dc2":{"hostname":"upstream.example","port":443}}',
 };
 function request(headers: HeadersInit = { Authorization: 'Bearer test-token', Upgrade: 'websocket' }) {
 	return new IncomingRequest('https://worker.example/v1/tunnel?v=1&target=dc2', { headers });

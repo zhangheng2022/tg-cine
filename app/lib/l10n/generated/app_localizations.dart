@@ -325,7 +325,7 @@ abstract class AppLocalizations {
   /// No description provided for @localDataBody.
   ///
   /// In zh, this message translates to:
-  /// **'当前版本在本机保存外观设置。Windows 开发联调会复用独立的本机 Telegram 会话和媒体缓存，播放器只读取私有本机媒体源；应用内登录和片库导入尚未接入。卸载应用或清理浏览器站点数据会移除外观设置，开发会话与缓存需单独清理。'**
+  /// **'外观设置、加密 Telegram 会话与片库保存在本机，来源按账号隔离。默认服务的设备访问凭据单独保存在系统安全存储。退出登录会注销会话，关闭应用会保留登录。卸载和清理数据的行为依赖平台，开发目录需单独管理。'**
   String get localDataBody;
 
   /// No description provided for @mediaRightsHeading.
@@ -367,7 +367,7 @@ abstract class AppLocalizations {
   /// No description provided for @developmentPlaybackNotice.
   ///
   /// In zh, this message translates to:
-  /// **'Windows 开发联调：播放本机终端已选择的授权媒体。应用内登录与来源选择尚未接入，长片定位仍可能缓冲。'**
+  /// **'开发播放器仍读取本机工具提供的私有媒体源，与应用内来源选择独立；长片定位仍可能缓冲。'**
   String get developmentPlaybackNotice;
 
   /// No description provided for @playbackLoading.
@@ -441,6 +441,444 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'前进 10 秒'**
   String get playbackForward;
+
+  /// No description provided for @telegramConnectTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接你的 Telegram'**
+  String get telegramConnectTitle;
+
+  /// No description provided for @telegramConnectBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用你自己的账号，选择已有权限的媒体来源。登录后可在本机保存来源选择。'**
+  String get telegramConnectBody;
+
+  /// No description provided for @telegramConnect.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接 Telegram'**
+  String get telegramConnect;
+
+  /// No description provided for @telegramConnecting.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在连接…'**
+  String get telegramConnecting;
+
+  /// No description provided for @telegramContinue.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续'**
+  String get telegramContinue;
+
+  /// No description provided for @telegramPhone.
+  ///
+  /// In zh, this message translates to:
+  /// **'国际格式手机号'**
+  String get telegramPhone;
+
+  /// No description provided for @telegramPhoneHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'+ 国家码和手机号'**
+  String get telegramPhoneHint;
+
+  /// No description provided for @telegramCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'Telegram 验证码'**
+  String get telegramCode;
+
+  /// No description provided for @telegramPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'两步验证密码'**
+  String get telegramPassword;
+
+  /// No description provided for @telegramEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录邮箱'**
+  String get telegramEmail;
+
+  /// No description provided for @telegramEmailCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱验证码'**
+  String get telegramEmailCode;
+
+  /// No description provided for @telegramLoginPrivacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码和密码仅用于本次验证，不保存在 TG Cine 设置中。Telegram 会话加密保存在本机。'**
+  String get telegramLoginPrivacy;
+
+  /// No description provided for @telegramInvalidInput.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入格式不正确，请检查后重试。'**
+  String get telegramInvalidInput;
+
+  /// No description provided for @telegramAuthenticationError.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证未通过，请检查验证码或密码后重试。'**
+  String get telegramAuthenticationError;
+
+  /// No description provided for @telegramStorageError.
+  ///
+  /// In zh, this message translates to:
+  /// **'本机来源记录未能保存或读取，原记录已保留。请重试。'**
+  String get telegramStorageError;
+
+  /// No description provided for @telegramConnectionError.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接或加载失败，请检查网络后重试。'**
+  String get telegramConnectionError;
+
+  /// No description provided for @telegramUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前平台的 Telegram 接入尚未就绪。'**
+  String get telegramUnavailable;
+
+  /// No description provided for @telegramUnsupportedAuth.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前登录步骤暂不支持。请使用已有 Telegram 客户端完成账号注册后重试。'**
+  String get telegramUnsupportedAuth;
+
+  /// No description provided for @telegramCancelLogin.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消本次登录'**
+  String get telegramCancelLogin;
+
+  /// No description provided for @telegramChooseSources.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择媒体来源'**
+  String get telegramChooseSources;
+
+  /// No description provided for @telegramSourcesBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'从主列表和归档中选择来源。'**
+  String get telegramSourcesBody;
+
+  /// No description provided for @telegramSearchSources.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索已加载的来源'**
+  String get telegramSearchSources;
+
+  /// No description provided for @telegramNoSources.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有匹配的来源；可调整搜索或加载更多。'**
+  String get telegramNoSources;
+
+  /// No description provided for @telegramLoadingSources.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载来源…'**
+  String get telegramLoadingSources;
+
+  /// No description provided for @telegramLoadMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载更多来源'**
+  String get telegramLoadMore;
+
+  /// No description provided for @telegramSourcesSelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} 个来源'**
+  String telegramSourcesSelected(int count);
+
+  /// No description provided for @telegramSaveSources.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存选择'**
+  String get telegramSaveSources;
+
+  /// No description provided for @telegramSourcesSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'来源选择已保存在本机'**
+  String get telegramSourcesSaved;
+
+  /// No description provided for @telegramLogout.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出登录'**
+  String get telegramLogout;
+
+  /// No description provided for @telegramConfirmLogout.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认退出登录'**
+  String get telegramConfirmLogout;
+
+  /// No description provided for @telegramKeepLogin.
+  ///
+  /// In zh, this message translates to:
+  /// **'保持登录'**
+  String get telegramKeepLogin;
+
+  /// No description provided for @telegramConnected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get telegramConnected;
+
+  /// No description provided for @telegramDevelopmentConnection.
+  ///
+  /// In zh, this message translates to:
+  /// **'本机开发接入：会话由应用持有；公共默认服务尚未开放。'**
+  String get telegramDevelopmentConnection;
+
+  /// No description provided for @telegramSourcesNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'不按聊天类型过滤。只选择你有权使用的媒体来源；保存后可在片库开始分批导入。'**
+  String get telegramSourcesNote;
+
+  /// No description provided for @librarySearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索已导入的文件、说明或来源'**
+  String get librarySearch;
+
+  /// No description provided for @libraryManageSources.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理来源'**
+  String get libraryManageSources;
+
+  /// No description provided for @libraryImportSources.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入来源'**
+  String get libraryImportSources;
+
+  /// No description provided for @libraryImportNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'分批整理消息，不下载视频。应用切到后台时暂停；再次打开后可继续。'**
+  String get libraryImportNotice;
+
+  /// No description provided for @libraryImportCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已导入 {count} 个视频'**
+  String libraryImportCount(int count);
+
+  /// No description provided for @libraryImportStart.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始导入'**
+  String get libraryImportStart;
+
+  /// No description provided for @libraryImportContinue.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续导入'**
+  String get libraryImportContinue;
+
+  /// No description provided for @libraryImportPause.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂停导入'**
+  String get libraryImportPause;
+
+  /// No description provided for @libraryImportRunning.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在整理历史消息…'**
+  String get libraryImportRunning;
+
+  /// No description provided for @libraryImportPaused.
+  ///
+  /// In zh, this message translates to:
+  /// **'已暂停'**
+  String get libraryImportPaused;
+
+  /// No description provided for @libraryImportComplete.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史整理完成'**
+  String get libraryImportComplete;
+
+  /// No description provided for @libraryImportIdle.
+  ///
+  /// In zh, this message translates to:
+  /// **'等待导入'**
+  String get libraryImportIdle;
+
+  /// No description provided for @libraryImportError.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入或读取未完成，已保存的内容仍保留。请重试。'**
+  String get libraryImportError;
+
+  /// No description provided for @libraryStorageError.
+  ///
+  /// In zh, this message translates to:
+  /// **'本机媒体记录暂时无法读取或保存，请重试。'**
+  String get libraryStorageError;
+
+  /// No description provided for @libraryNoMedia.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚无已导入的视频'**
+  String get libraryNoMedia;
+
+  /// No description provided for @libraryNoMediaBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'从来源开始导入；首批视频保存后会出现在这里。'**
+  String get libraryNoMediaBody;
+
+  /// No description provided for @libraryNoResults.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有匹配的已导入视频'**
+  String get libraryNoResults;
+
+  /// No description provided for @libraryClearSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除搜索'**
+  String get libraryClearSearch;
+
+  /// No description provided for @libraryLoadMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载更多视频'**
+  String get libraryLoadMore;
+
+  /// No description provided for @libraryRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新读取'**
+  String get libraryRetry;
+
+  /// No description provided for @libraryFileDetails.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件详情'**
+  String get libraryFileDetails;
+
+  /// No description provided for @librarySelectFile.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择一个视频查看文件信息'**
+  String get librarySelectFile;
+
+  /// No description provided for @libraryUnknownFile.
+  ///
+  /// In zh, this message translates to:
+  /// **'未命名视频'**
+  String get libraryUnknownFile;
+
+  /// No description provided for @libraryUnknownSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'来源名称未加载'**
+  String get libraryUnknownSource;
+
+  /// No description provided for @libraryUnknownDuration.
+  ///
+  /// In zh, this message translates to:
+  /// **'时长未知'**
+  String get libraryUnknownDuration;
+
+  /// No description provided for @libraryFileSize.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小'**
+  String get libraryFileSize;
+
+  /// No description provided for @libraryDuration.
+  ///
+  /// In zh, this message translates to:
+  /// **'时长'**
+  String get libraryDuration;
+
+  /// No description provided for @librarySource.
+  ///
+  /// In zh, this message translates to:
+  /// **'来源'**
+  String get librarySource;
+
+  /// No description provided for @libraryOriginalCaption.
+  ///
+  /// In zh, this message translates to:
+  /// **'原消息说明'**
+  String get libraryOriginalCaption;
+
+  /// No description provided for @libraryCopySource.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制源消息链接'**
+  String get libraryCopySource;
+
+  /// No description provided for @librarySourceCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'链接已复制，可在 Telegram 中查看'**
+  String get librarySourceCopied;
+
+  /// No description provided for @librarySourceLinkError.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时无法取得源消息链接，请检查来源权限后重试。'**
+  String get librarySourceLinkError;
+
+  /// No description provided for @libraryDetailsUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前条目已不可用，请返回片库。'**
+  String get libraryDetailsUnavailable;
+
+  /// No description provided for @libraryLoading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在读取本机片库…'**
+  String get libraryLoading;
+
+  /// No description provided for @telegramDefaultConnection.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认服务自动连接。Telegram 登录会话与片库保存在本机，无需填写服务地址或访问令牌。'**
+  String get telegramDefaultConnection;
+
+  /// No description provided for @telegramServiceLimited.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认服务额度或连接数已达上限，请暂停导入并稍后重试。'**
+  String get telegramServiceLimited;
+
+  /// No description provided for @serviceConnected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get serviceConnected;
+
+  /// No description provided for @serviceConnecting.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接中'**
+  String get serviceConnecting;
+
+  /// No description provided for @telegramServiceAccessExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认服务访问已失效，请重新连接以重新启用。'**
+  String get telegramServiceAccessExpired;
 }
 
 class _AppLocalizationsDelegate

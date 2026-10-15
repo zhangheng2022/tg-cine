@@ -1,8 +1,18 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+val telegramDefinitions = providers.gradleProperty("dart-defines").orNull.orEmpty()
+    .split(',').filter { it.isNotBlank() }.associate {
+        val definition = String(Base64.getDecoder().decode(it), Charsets.UTF_8)
+        definition.substringBefore('=') to definition.substringAfter('=', "")
+    }
+val publicTelegramConfigured = listOf("TG_CINE_API_ID", "TG_CINE_API_HASH")
+    .any { !telegramDefinitions[it].isNullOrEmpty() }
 
 android {
     namespace = "io.tgcine.tg_cine"
@@ -27,6 +37,9 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        if (publicTelegramConfigured) {
+            ndk { abiFilters += setOf("arm64-v8a", "x86_64") }
+        }
     }
 
     buildTypes {
@@ -46,4 +59,24 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+gradle.taskGraph.whenReady {
+    if (publicTelegramConfigured) {
+        if (listOf("TG_CINE_API_ID", "TG_CINE_API_HASH").any { telegramDefinitions[it].isNullOrEmpty() }) {
+            throw GradleException("Telegram application configuration is incomplete.")
+        }
+        for (abi in listOf("arm64-v8a", "x86_64")) {
+            if (!file("src/main/jniLibs/$abi/libtdjson.so").isFile) {
+                throw GradleException("Telegram requires the verified TDLib native library for $abi. Run the mobile native build and installer first.")
+            }
+        }
+    }
+    val publicBuild = allTasks.any { it.name.contains("Release") || it.name.contains("Profile") }
+    val privateConfiguration = telegramDefinitions.any { (key, value) ->
+        key in setOf("TG_CINE_TELEGRAM_CONFIG", "TG_CINE_TELEGRAM_MOBILE_CONFIG") && value.isNotEmpty()
+    }
+    if (publicBuild && privateConfiguration) {
+        throw GradleException("Private Telegram configuration is allowed only in Debug builds.")
+    }
 }

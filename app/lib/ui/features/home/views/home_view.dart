@@ -8,6 +8,8 @@ import '../../library/views/library_view.dart';
 import '../../settings/view_models/settings_view_model.dart';
 import '../../settings/views/settings_view.dart';
 import '../../sources/views/sources_view.dart';
+import '../../sources/view_models/sources_view_model.dart';
+import '../../library/view_models/library_view_model.dart';
 import '../view_models/home_view_model.dart';
 import '../../player/view_models/player_view_model.dart';
 import '../../player/views/player_view.dart';
@@ -18,6 +20,8 @@ class HomeView extends StatelessWidget {
     required this.settings,
     this.player,
     this.videoSurface,
+    this.sources,
+    this.library,
     super.key,
   });
 
@@ -25,6 +29,8 @@ class HomeView extends StatelessWidget {
   final SettingsViewModel settings;
   final PlayerViewModel? player;
   final Widget? videoSurface;
+  final SourcesViewModel? sources;
+  final LibraryViewModel? library;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -82,6 +88,7 @@ class HomeView extends StatelessWidget {
                 ),
                 child: switch (viewModel.selectedTab) {
                   HomeTab.library => LibraryView(
+                    viewModel: library,
                     onOpenSources: () => viewModel.select(HomeTab.sources),
                     onOpenPlayer: player != null && videoSurface != null
                         ? () => Navigator.of(context).push(
@@ -98,9 +105,14 @@ class HomeView extends StatelessWidget {
                     onOpenLibrary: () => viewModel.select(HomeTab.library),
                   ),
                   HomeTab.sources => SourcesView(
+                    viewModel: sources,
                     onOpenSettings: () => viewModel.select(HomeTab.settings),
                   ),
-                  HomeTab.settings => SettingsView(viewModel: settings),
+                  HomeTab.settings => SettingsView(
+                    viewModel: settings,
+                    sources: sources,
+                    onOpenSources: () => viewModel.select(HomeTab.sources),
+                  ),
                 },
               ),
             ),

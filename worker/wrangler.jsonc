@@ -5,6 +5,18 @@
 	"compatibility_date": "2026-10-10",
 	"compatibility_flags": ["nodejs_compat"],
 	"observability": { "enabled": true },
-	"vars": { "RELAY_TARGETS": "{}", "RELAY_ENABLED": "false" },
-	"secrets": { "required": ["RELAY_TOKEN"] },
+	"vars": {
+		"RELAY_ENABLED": "false",
+		"PUBLIC_SERVICE_ENABLED": "false",
+		"PUBLIC_ORIGIN": "https://tg-cine.zhangheng.eu.org",
+	},
+	"secrets": { "required": ["RELAY_TOKEN", "PUBLIC_SIGNING_KEY"] },
+	"ratelimits": [{ "name": "PUBLIC_REQUESTS", "namespace_id": "20261014", "simple": { "limit": 120, "period": 60 } }],
+	"durable_objects": {
+		"bindings": [
+			{ "name": "PUBLIC_SESSIONS", "class_name": "PublicSession" },
+			{ "name": "PUBLIC_BUDGET", "class_name": "PublicBudget" },
+		],
+	},
+	"migrations": [{ "tag": "public-access-v1", "new_sqlite_classes": ["PublicSession", "PublicBudget"] }],
 }

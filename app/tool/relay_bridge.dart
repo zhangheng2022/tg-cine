@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:tg_cine/data/services/relay/relay_bridge.dart';
+import 'package:tg_cine/data/services/relay/telegram_target_policy.dart';
 
 Future<void> main(List<String> arguments) async {
   if (arguments.length != 1) {
@@ -38,7 +39,9 @@ Future<RelayBridge> startConfiguredBridge(String path) async {
     if (targets.containsKey(address)) {
       throw const FormatException('Duplicate target');
     }
-    targets[address] = entry['id'] as String;
+    final target = encodeTelegramTarget(address.$1, address.$2);
+    if (target == null) throw const FormatException('Invalid Telegram target');
+    targets[address] = target;
   }
   final tokenFile = Platform.environment['TG_CINE_RELAY_TOKEN_FILE'];
   if (tokenFile == null) throw const FormatException('Token file required');

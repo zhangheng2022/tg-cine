@@ -8,15 +8,24 @@ import '../../../../domain/models/app_settings.dart';
 import '../../../../l10n/l10n.dart';
 import '../../privacy/views/local_data_view.dart';
 import '../view_models/settings_view_model.dart';
+import '../../sources/view_models/sources_view_model.dart';
+import '../../../../domain/models/telegram_account.dart';
 
 class SettingsView extends StatelessWidget {
-  const SettingsView({required this.viewModel, super.key});
+  const SettingsView({
+    required this.viewModel,
+    this.sources,
+    this.onOpenSources,
+    super.key,
+  });
 
   final SettingsViewModel viewModel;
+  final SourcesViewModel? sources;
+  final VoidCallback? onOpenSources;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: viewModel,
+    listenable: Listenable.merge([viewModel, sources]),
     builder: (context, _) {
       final l10n = context.l10n;
       return SingleChildScrollView(
@@ -31,17 +40,36 @@ class SettingsView extends StatelessWidget {
                 children: [
                   FTileGroup(
                     label: Text(l10n.connectionSection),
-                    description: Text(l10n.connectionUnavailable),
+                    description: Text(
+                      sources == null
+                          ? l10n.connectionUnavailable
+                          : sources!.account.defaultService
+                          ? l10n.telegramDefaultConnection
+                          : l10n.telegramDevelopmentConnection,
+                    ),
                     children: [
                       FTile(
                         prefix: const Icon(FLucideIcons.send),
                         title: Text(l10n.telegram),
-                        details: Text(l10n.notConnected),
+                        details: Text(
+                          sources?.account.stage == TelegramStage.ready
+                              ? l10n.telegramConnected
+                              : l10n.notConnected,
+                        ),
+                        onPress: sources == null ? null : onOpenSources,
                       ),
                       FTile(
                         prefix: const Icon(FLucideIcons.cloud),
                         title: Text(l10n.defaultService),
-                        details: Text(l10n.serviceUnavailable),
+                        details: Text(
+                          sources?.account.relayReady == true
+                              ? l10n.serviceConnected
+                              : sources?.account.defaultService == true &&
+                                    sources?.account.stage ==
+                                        TelegramStage.connecting
+                              ? l10n.serviceConnecting
+                              : l10n.serviceUnavailable,
+                        ),
                       ),
                     ],
                   ),

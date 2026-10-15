@@ -4,18 +4,24 @@ import '../ui/features/home/view_models/home_view_model.dart';
 import '../ui/features/home/views/home_view.dart';
 import '../ui/features/settings/view_models/settings_view_model.dart';
 import '../ui/features/player/view_models/player_view_model.dart';
+import '../ui/features/sources/view_models/sources_view_model.dart';
+import '../ui/features/library/view_models/library_view_model.dart';
 
 class TgCineFlow extends StatefulWidget {
   const TgCineFlow({
     required this.settings,
     this.player,
     this.videoSurface,
+    this.sources,
+    this.library,
     super.key,
   });
 
   final SettingsViewModel settings;
   final PlayerViewModel? player;
   final Widget? videoSurface;
+  final SourcesViewModel? sources;
+  final LibraryViewModel? library;
 
   @override
   State<TgCineFlow> createState() => _TgCineFlowState();
@@ -30,6 +36,8 @@ class _TgCineFlowState extends State<TgCineFlow> {
     settings: widget.settings,
     player: widget.player,
     videoSurface: widget.videoSurface,
+    sources: widget.sources,
+    library: widget.library,
   );
 
   @override

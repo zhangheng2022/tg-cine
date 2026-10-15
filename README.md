@@ -6,7 +6,7 @@ Telegram 支持的开源个人电影与电视剧播放器。手机与宽屏同�
 界面包含片库、观看记录、来源、设置四项导航，手机底栏、中屏图标侧栏、宽屏文字侧栏同步适配；ForUI 触控主题、中文界面和可持久化的本机外观设置。
 基础架构参照 `meet_trace` 的分层 MVVM，详见 [基础架构](docs/architecture.md)。
 独立的 TypeScript Worker 工程使用官方 `create-cloudflare` 模板，详见 [Worker 基础架构](docs/worker-architecture.md)。
-Worker 提供健康检查、鉴权和目标白名单，以及默认关闭的受限 WebSocket/TCP 实验中转。2026-10-12 经用户授权部署实验版本，线上启用中转并通过十个固定 Telegram 目标握手；实际配置与边界见 [部署记录](docs/worker-deployment.md)。
+Worker 提供健康检查、鉴权、Telegram 官方动态网段校验，以及默认关闭的受限 WebSocket/TCP 中转。线上经授权启用，取消固定 IP 列表，按需自动刷新官方范围；Android 真机已完成真实授权。契约与边界见 [动态目标策略](docs/telegram-network-policy.md) 和 [部署记录](docs/worker-deployment.md)。
 Windows Debug 已接入真实 Flutter 播放器与 ForUI 控制页，可通过本机工具提供的私有媒体源播放所选 Telegram 视频；手机与宽屏布局同时验证。应用内登录、频道选择、TDLib 打包和续看尚未接入，启动与验证边界见 [Flutter 播放器](docs/flutter-player.md)。
 TDLib Windows x64 库已从官方固定提交构建，独立 Dart ABI/生命周期验证通过；尚未作为 Flutter 资源打包。来源、复现与验证命令见 [原生构建记录](docs/native-tdlib.md)。
 完整阶段、当前交付及验收边界见 [开发执行记录](docs/development-plan.md)。
@@ -37,7 +37,7 @@ Copy-Item .dev.vars.example .dev.vars
 npm run dev
 ```
 
-`.dev.vars` 仅供本地使用，已忽略；填写独立的 `RELAY_TOKEN`，`RELAY_TARGETS` 目标白名单默认为 `{}`。
+`.dev.vars` 仅供本地使用，已忽略；私有开发模式填写独立的 `RELAY_TOKEN`；服务端无固定目标配置，启用后只允许 Telegram 官方动态网段内的公网 IP:443。
 `dev` 强制使用本地 Wrangler，不需要 Cloudflare 凭据；`RELAY_ENABLED` 默认 `false`。接口、实验限制及配置契约见 [Worker 架构](docs/worker-architecture.md)。
 
 ## 检查与构建
@@ -56,7 +56,7 @@ flutter build windows
 调试 APK 位于 `app/build/app/outputs/flutter-apk/app-debug.apk`，用于开发验证，正式发布前需配置签名。
 
 已在本机通过格式检查、静态分析、97 项测试；新增播放器通过 Windows Debug/Release 和 Web 构建，既有 UI 基础此前通过 Android 调试 APK。测试覆盖 320/800/1440 窗口、明暗及字体缩放、外观与存储失败、播放命令和错误恢复、桥接、本机密钥、聊天选择、可读范围、私有 HTTP Range 的同流替换、跨流隔离、关闭和分层。其他平台的构建与真实播放须重新验收。
-Android 模拟器已检查四项导航、本机说明、手机/中屏/宽屏和 1.3 倍字号。真机、iOS / macOS / Linux 构建与远程 GitHub Actions 尚未验证；CI 已配置六平台构建目标。
+Android 模拟器已检查四项导航、本机说明、手机/中屏/宽屏和 1.3 倍字号。Android 真机原生加载、默认服务登录及隔离数据流程已有验证；iOS / macOS / Linux 构建与远程 GitHub Actions 尚未验证；CI 已配置六平台构建目标。
 
 Worker 在 `worker/` 内执行：
 
@@ -85,7 +85,7 @@ npm run test:relay
 - `app/lib/theme/`：统一 ForUI 主题。
 - `app/lib/l10n/`：ARB 中文文案及生成代码。
 - `app/test/`：页面导航、小屏、大字体、明暗主题、ViewModel 与分层检查。
-- `worker/src/`：请求入口、鉴权、协议、目标白名单和默认关闭的实验传输。
+- `worker/src/`：请求入口、鉴权、协议、官方动态网段策略和默认关闭的实验传输。
 - `worker/test/`：Workers 运行时的入口校验、流控与失败清理测试。
 - `.github/workflows/ci.yml`：独立的 Flutter 和 Worker 检查任务，无 Cloudflare 凭据或部署步骤。
 
