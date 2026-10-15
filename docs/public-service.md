@@ -6,7 +6,7 @@
 
 首次取得新版凭据时删除同服务的旧 v1 中转凭据；不读取或转换旧凭据，不删除 Telegram 会话、媒体数据库和观看记录。新版失效凭据不会静默循环注册，用户通过现有重新连接入口处理。
 
-原生客户端在每次连接前取得访问凭据，通过 Authorization 发送，禁止凭据进入 URL，不跟随接口重定向。服务器独立校验目标与配额。详见 [协议](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/protocol.md)。
+原生客户端在每次连接前取得访问凭据，通过 Authorization 发送，禁止凭据进入 URL，不跟随接口重定向。服务器独立校验目标与配额。详见 [协议](https://github.com/zhangheng2022/tg-cine-worker/blob/master/docs/protocol.md)。
 
 ## 本机构建
 

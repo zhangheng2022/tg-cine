@@ -57,7 +57,7 @@ Windows x64 Release 构建成功；Dart 工具已通过格式化、静态分析�
 
 完整本机来源与产物记录保存在已忽略的 `.cache/native/build-manifest.json`；第三方原生单元测试、Native Assets 打包和 Flutter 内加载尚未验证。
 
-本机直连源码中的默认 DC2 `149.154.167.51:443` 在 5 秒内未建立 TCP 连接。后续经用户授权部署新 Worker，十个固定目标的边缘 TCP/MTProto 握手已通过，见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/history/worker-deployment.md)。Windows TDLib 经 Dart 桥接的原生验证也已通过，范围如下。
+本机直连源码中的默认 DC2 `149.154.167.51:443` 在 5 秒内未建立 TCP 连接。后续经用户授权部署新 Worker，十个固定目标的边缘 TCP/MTProto 握手已通过，见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/master/docs/history/worker-deployment.md)。Windows TDLib 经 Dart 桥接的原生验证也已通过，范围如下。
 
 ## 线上 TDLib 验证
 
@@ -158,7 +158,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tool/login_local.ps1 -Ap
 
 ### 2026-10-13 优化执行与复测
 
-已部署有界下行窗口，线上版本为 `466e7289-959b-4437-bb97-7ce884690ed9`，兼容 v1 逐帧 ACK；安全边界见 [Worker 架构](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/architecture.md)。保持客户端原先的读取逻辑，在 2026-10-13T02:28:55Z 完成同一视频的对照，首轮开始下载时 TDLib 的已下载字节为 0，桥接记录到实际媒体传输：
+已部署有界下行窗口，线上版本为 `466e7289-959b-4437-bb97-7ce884690ed9`，兼容 v1 逐帧 ACK；安全边界见 [Worker 架构](https://github.com/zhangheng2022/tg-cine-worker/blob/master/docs/architecture.md)。保持客户端原先的读取逻辑，在 2026-10-13T02:28:55Z 完成同一视频的对照，首轮开始下载时 TDLib 的已下载字节为 0，桥接记录到实际媒体传输：
 
 | 检查 | 优化前 | 仅 Worker 窗口优化后 |
 | --- | --- | --- |

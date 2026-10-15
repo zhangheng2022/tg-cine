@@ -18,7 +18,7 @@ Telegram DC 和媒体 DC 的实际地址/端口必须分别核验并配置为映
 
 真实本机 workerd、Dart 桥接与 TCP echo 的 1 MiB 双向传输和关闭已通过。现有 TGvideo Node 原型的五个官方 WSS DC 握手也通过，但其 `/dc/<id>`、子协议鉴权与此处 `/v1/tunnel`、Bearer/ACK 契约不同，不能直接混用。
 
-官方固定提交的 Windows x64 tdjson 已构建，Dart JSON ABI、初始状态与正常关闭验证通过。原生 `testProxy` 已经此桥接与线上 Worker 完成五个 DC 的临时密钥握手；初始化、启用代理及 `pingProxy` 通过，见 [原生验证](../native-tdlib.md)。用户在开发入口完成本机账号授权，`getMe` 和会话重开已验证；库仍未打包进 Flutter，视频读取未验收。新 Worker 十个固定目标的 Node 握手及自定义域名无代理访问另见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/history/worker-deployment.md)。逐帧 ACK 的吞吐与拖动体验待真实样本测量，生产窗口与配额不能依据握手或回环速度决定。
+官方固定提交的 Windows x64 tdjson 已构建，Dart JSON ABI、初始状态与正常关闭验证通过。原生 `testProxy` 已经此桥接与线上 Worker 完成五个 DC 的临时密钥握手；初始化、启用代理及 `pingProxy` 通过，见 [原生验证](../native-tdlib.md)。用户在开发入口完成本机账号授权，`getMe` 和会话重开已验证；库仍未打包进 Flutter，视频读取未验收。新 Worker 十个固定目标的 Node 握手及自定义域名无代理访问另见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/master/docs/history/worker-deployment.md)。逐帧 ACK 的吞吐与拖动体验待真实样本测量，生产窗口与配额不能依据握手或回环速度决定。
 
 ## 原型限制
 

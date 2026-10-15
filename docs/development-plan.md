@@ -45,7 +45,7 @@
 | `npm run test:relay` | 已通过；实际 workerd 与 TCP echo 验证 1,048,576 字节内容及顺序，清理后进程正常退出 |
 | 现有 TGvideo 原型 | 使用该目录的本机配置重新探测 5 个 DC，均返回 resPQ；配置未复制、秘密未输出、未部署该仓库 |
 | TDLib Windows 原生库 | 固定官方提交构建 1.8.68，现代 JSON C 导出和系统 DLL 依赖已核对；Dart 实际加载、初始状态、正常关闭通过 |
-| 新 Worker 实验部署 | 自定义域名无代理健康检查、鉴权/白名单与十个固定目标的边缘 TCP/MTProto 握手通过；误加目标已删除并验证拒绝，workers.dev 本机直连超时，详见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/history/worker-deployment.md) |
+| 新 Worker 实验部署 | 自定义域名无代理健康检查、鉴权/白名单与十个固定目标的边缘 TCP/MTProto 握手通过；误加目标已删除并验证拒绝，workers.dev 本机直连超时，详见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/master/docs/history/worker-deployment.md) |
 | TDLib 经新桥接 | 五个 DC 的原生 `testProxy` 完整临时密钥握手通过，耗时 2266–4438 ms；不是 Node 单包握手的替代说法 |
 | 本机登录前检查 | 官方 API 配置只读，网络关闭→启用环回代理→初始化顺序、启用状态、`pingProxy`、等待手机号与正常关闭通过；重复运行复用 DPAPI 密钥/数据库 |
 | 本机账号授权 | 用户在本机终端完成登录，`getMeVerified=true`；重新打开私有加密会话后也成功调用 `getMe` |
