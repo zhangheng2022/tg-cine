@@ -43,4 +43,8 @@
 
 用户有 iPhone，但当前没有 Mac 或签名环境。本轮可完成云端构建与模拟器验收；真实 iPhone 授权及片库仍需签名安装渠道，不以模拟器、无签名设备包或共用代码代替。
 
-源链接修复 078dde 的 [CI 38677099559](https://github.com/zhangheng2022/tg-cine/actions/runs/38677099559) 全部通过。移动原生工作流增加可选 rtifact_run_id：只从本仓库下载对应平台产物，再校验固定 TDLib 来源及每文件摘要，使最新 Flutter 代码可以复用同一原生库验收。默认仍从固定源码构建；不注入真实 Telegram 应用凭据。
+## iOS 部署目标关卡
+
+首轮源码构建的 XCFramework 摘要正确，但 Mach-O 的实际 `LC_BUILD_VERSION.minos=26.5`，与框架声明的 iOS 15.0 不符。该产物不可用于宣称 iOS 15 兼容，即使最新模拟器测试通过。已在固定源码构建选项明确传入 `IOS_DEPLOYMENT_TARGET=15.0`，安装器逐个校验设备及模拟器架构、平台与实际最低版本，旧产物已被拒绝，正在重新编译；不修改二进制版本标记来规避检查。
+
+源链接修复 078dde 的 [CI 38677099559](https://github.com/zhangheng2022/tg-cine/actions/runs/38677099559) 全部通过。移动原生工作流增加可选 artifact_run_id：只从本仓库下载对应平台产物，再校验固定 TDLib 来源及每文件摘要，使最新 Flutter 代码可以复用同一原生库验收。默认仍从固定源码构建；不注入真实 Telegram 应用凭据。

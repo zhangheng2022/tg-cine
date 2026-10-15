@@ -68,6 +68,11 @@ else
 from pathlib import Path
 for name in ('build.sh','build-openssl.sh'):
  p=Path(name);p.write_text(p.read_text().replace('platforms="macOS iOS watchOS tvOS visionOS"','platforms="iOS"'))
+p=Path('build.sh')
+s=p.read_text()
+option='options="$options -DCMAKE_BUILD_TYPE=Release"'
+if s.count(option) != 1: raise SystemExit('Pinned iOS build options changed')
+p.write_text(s.replace(option, option[:-1]+' -DIOS_DEPLOYMENT_TARGET=15.0"'))
 PY
   bash build-openssl.sh
   cmake -S "$work/td" -B "$work/generated" -DTD_GENERATE_SOURCE_FILES=ON
