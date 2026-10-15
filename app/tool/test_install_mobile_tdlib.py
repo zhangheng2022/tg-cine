@@ -31,6 +31,30 @@ class ArtifactTests(unittest.TestCase):
             with self.subTest(platform=platform, size=len(binary)):
                 with self.assertRaises(ValueError): validate_ios_binary(binary, platform)
 
+        with tempfile.TemporaryDirectory(prefix='tg-cine-ios-target-') as directory:
+            root = Path(directory)
+            entries = []
+            for name, content in (
+                ('Info.plist', b'fixture'),
+                ('ios-arm64/tdjson.framework/tdjson', thin(arm, 2)),
+                ('ios-arm64_x86_64-simulator/tdjson.framework/tdjson', valid),
+            ):
+                relative = 'tdjson.xcframework/' + name
+                file = root / relative
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_bytes(content)
+                entries.append({'path': relative, 'sha256': hashlib.sha256(content).hexdigest()})
+            manifest = root / 'manifest.json'
+            def write():
+                manifest.write_text(json.dumps({'sourceCommit': COMMIT, 'platform': 'ios', 'files': entries}), encoding='utf-8')
+            write()
+            self.assertEqual(len(validated_files(root)), 3)
+            bad = thin(arm, 2, 26 << 16)
+            (root / entries[1]['path']).write_bytes(bad)
+            entries[1]['sha256'] = hashlib.sha256(bad).hexdigest()
+            write()
+            with self.assertRaisesRegex(ValueError, 'target iOS 15.0'): validated_files(root)
+
     def test_provenance_hashes_and_paths(self):
         with tempfile.TemporaryDirectory(prefix='tg-cine-native-artifacts-') as directory:
             root = Path(directory)
