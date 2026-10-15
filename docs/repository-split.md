@@ -1,6 +1,6 @@
 # 2026-10-15 拆仓与 v2 切换
 
-已确认：Flutter 上提根目录；Worker 独立公开仓库并以首次提交初始化；Hono 重构；Cloudflare 技能全部迁移；不提供旧接口、旧协议或旧客户端兼容；旧 Worker 状态不保留。
+已确认：Flutter 上提根目录；Worker 独立公开仓库并以首次提交初始化；Cloudflare Workers + Vite 工具链，Hono 处理 API；Cloudflare 技能全部迁移；不提供旧接口、旧协议或旧客户端兼容；旧 Worker 状态不保留。
 
 ## 目录与数据
 
