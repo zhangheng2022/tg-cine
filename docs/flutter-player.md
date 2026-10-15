@@ -8,17 +8,17 @@
 
 当前真实媒体接入限 Windows Debug。登录、频道选择和 TDLib 生命周期由现有本机工具持有；不是完整的应用内 Telegram 接入。API 凭据、TDLib 会话与 Worker 令牌不写入 Flutter 配置或发行客户端。播放器依赖依据 [media_kit 官方说明](https://pub.dev/packages/media_kit) 接入。
 
-在 `app/` 的本机终端中运行以下命令，API 文件使用已存在的本机路径：
+在仓库根目录 的本机终端中运行以下命令，API 文件使用已存在的本机路径：
 
 ```powershell
-$env:TG_CINE_RELAY_TOKEN_FILE = (Resolve-Path ../.cache/deployment/relay-token.txt).Path
-dart run tool/telegram_login.dart ../.cache/native/build-windows/Release/tdjson.dll ../.cache/deployment/relay-bridge.json '<本机 API .env 路径>' --serve-media
+$env:TG_CINE_RELAY_TOKEN_FILE = (Resolve-Path .cache/deployment/relay-token.txt).Path
+dart run tool/telegram_login.dart .cache/native/build-windows/Release/tdjson.dll .cache/deployment/relay-bridge.json '<本机 API .env 路径>' --serve-media
 ```
 
-等待“Flutter 私有媒体源已就绪”，保持终端运行，在另一终端进入 `app/`：
+等待“Flutter 私有媒体源已就绪”，保持终端运行，在另一终端进入仓库根目录：
 
 ```powershell
-$mediaFile = (Resolve-Path ../.cache/native/accounts/dev-account/flutter-media.json).Path
+$mediaFile = (Resolve-Path .cache/native/accounts/dev-account/flutter-media.json).Path
 flutter run -d windows --dart-define="TG_CINE_DEV_MEDIA_FILE=$mediaFile"
 ```
 

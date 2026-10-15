@@ -1,69 +1,30 @@
-# 仓库贡献指南
+# 客户端贡献指南
 
-## 项目结构与模块组织
+## 工程与分层
 
-技术栈为 Flutter/Dart 与 TypeScript Worker，UI 使用 ForUI，不使用 Go。
+本仓库只维护 Flutter/Dart 客户端，UI 使用 ForUI，不使用 Go。Flutter 工程位于仓库根目录，保留 Android、iOS、Web、Windows、macOS、Linux 六平台。Worker 位于独立的 tg-cine-worker 仓库。
 
-- `app/` 为 Flutter 客户端，保留 Android、iOS、Web、Windows、macOS、Linux 六个平台模板，界面须同时适配手机与宽屏。
-- `app/lib/ui/features/` 按功能组织 View 和 ViewModel；`app/lib/ui/core/` 存放共享 ForUI 组件。`app/lib/app/` 负责依赖创建与释放；Domain 保持纯 Dart，Data 实现服务和仓库，UI 不直接访问 Data。
-- 主题和中文 ARB 文案分别位于 `app/lib/theme/`、`app/lib/l10n/`；平台图标和资源位于 `app/<platform>/`。
-- `worker/src/` 包含 TypeScript 路由、鉴权、协议、目标校验和中转骨架。测试位于 `app/test/`、`worker/test/`，架构说明位于 `docs/`。
+`lib/ui/features/` 按功能组织 View/ViewModel，`lib/ui/core/` 是共享组件。`lib/app/` 创建、注入和释放依赖；Domain 保持纯 Dart，Data 实现服务和仓库，UI 不直接访问 Data。中转客户端与 TDLib 留在 `lib/data/`。
 
-## 构建、测试与本地开发
+## 开发检查
 
-工具版本以 CI 和工程配置为准，当前使用 Flutter 3.47.7 和 Node.js 24；在对应工程目录执行命令。
+使用工程和 CI 锁定版本（Flutter 3.47.7）。在根目录运行 `flutter pub get`、`dart format lib test tool integration_test`、`flutter analyze`、`flutter test`、`python -m unittest discover -s tool -p 'test_*.py'`。相关构建包括 `flutter build web`、`flutter build apk --debug` 和平台构建。不要将可构建模板等同于真实平台业务验收。
 
-- 在 `app/`：`flutter pub get` 安装依赖，`flutter run` 启动客户端。
-- `dart format lib test tool`、`flutter analyze`、`flutter test` 分别执行格式化、静态分析和测试。
-- `flutter build web`、`flutter build apk --debug` 验证 CI 使用的构建目标。
-- 在 `worker/`：`npm ci` 安装锁定依赖，`npm run dev` 启动本地 Wrangler。
-- `npm run format:check`、`npm run check`、`npm test` 分别检查格式、生成并检查类型、运行测试。
-- `npm run build` 仅执行 Wrangler dry-run 打包，不部署。
+采用两空格、snake_case 文件名、UpperCamelCase 类型。优先 ForUI、context.theme、context.l10n，保留安全区、字体缩放和 48dp 主操作。修改 ARB 后运行 flutter gen-l10n。界面按可用窗口宽度同时适配手机与宽屏，测试覆盖明暗主题与大字体。
 
-## 代码风格与命名
+## 技能与审查
 
-遵循 Dart 格式化工具和 `flutter_lints`：使用两空格缩进，文件采用 `snake_case.dart`，类型采用 `UpperCamelCase`，成员采用 `lowerCamelCase`。Worker 使用 Prettier，配置为制表符缩进、单引号、分号及 140 字符行宽。
+- 用户明确调用 grill-me 时读取 `.agents/skills/grill-me/SKILL.md`，其委托的 grilling 为开发者环境技能；先查证事实，再按依赖顺序提问。用户要求先给方案时只分析。
+- UI 新增、调整和 UX 审查使用环境提供的 impeccable，先读取 PRODUCT.md、DESIGN.md 和对应 `.impeccable/surfaces/`，编辑前读取 craft-floor。以 Flutter 渲染、组件测试和截图验收，不以 HTML 检测代替。
+- 功能、安全、架构变更完成检查后使用 open-codereview 或可用 Code Review；工具不能审查 diff 时说明限制并人工审查。问题给行号、条件与影响；修复后复跑相关检查。PR 评论、批准和合并需要相应授权。
+- 架构查询优先已有 Graphify 图并核对源码，区分 EXTRACTED/INFERRED/AMBIGUOUS；技能文档不代表实现。仅明确要求初建或更新时重建，产物忽略在 graphify-out/；watch/hooks 不自动启用。
 
-优先使用 ForUI、`context.theme` 和 `context.l10n`，保留安全区域、字体缩放和 48dp 主操作控件。修改 ARB 后运行 `flutter gen-l10n`，不手动编辑生成文件。
+## 数据与协议
 
-根据可用窗口宽度组织响应式布局，手机与宽屏同步设计、实现和验证，不仅依据设备类型或系统平台判断布局。
+客户端只使用 Worker v2，不维护旧接口兼容。切换时清理旧中转凭据，保留 Telegram 会话、来源、媒体数据库与观看记录。`.cache/native/accounts/` 是现有开发数据位置，改工具路径时不得写到父目录或误创建新账号库。
 
-## 测试要求
+凭据、真实配置、构建产物、原生库不提交。公共客户端不包含共享开发中转令牌；Telegram 应用标识与账号会话不同。目标仅允许服务端提供的有效 Telegram 官方公网 CIDR 与固定 443，策略过期或失败时拒绝连接。部署须另行明确授权。
 
-Flutter 使用 `flutter_test`，测试目录镜像源码路径，文件命名为 `*_test.dart`。界面变更须覆盖手机、宽屏及字体缩放场景。Worker 使用 Vitest 和 `@cloudflare/vitest-plugin`，文件命名为 `*.spec.ts`。测试应覆盖变更行为、失败路径和鉴权边界；当前未配置覆盖率百分比门槛。创建 PR 前运行相关检查。
+## 提交
 
-## 技能与审查工作流
-
-按任务使用 `grill-me`、`impeccable`、`open-codereview` 和 `graphify`；技能先读取当前环境提供的 `SKILL.md`，工具遵循实际接口。用户要求“先给方案”时只分析，执行范围以用户授权为准。
-
-### grill-me：方案质询与决策澄清
-
-- 用户明确调用 `/grill-me` 或要求深入质询方案、设计时启用，不自动用于普通开发。入口位于 `.agents/skills/grill-me/SKILL.md`，委托 `grilling` 执行；先读取两者说明。
-- 源码、配置和调用关系先自行查证，只向用户询问需要其决定的问题。将决策组织为依赖树，每轮集中询问前提已确定的问题，编号并给出建议；等待回答后再推进依赖这些答案的问题。
-- 结合任务核对手机与宽屏适配、ForUI 组件与 Flutter 分层、Worker 协议、鉴权及目标范围。整理已确认决策和待定事项，用户确认理解一致后再按授权实施；质询本身不授权部署。
-
-### Impeccable：界面设计与验收
-
-- Flutter 界面新增、调整和 UX 审查使用 `impeccable`。先按技能的 context 流程读取 `PRODUCT.md`、`DESIGN.md` 与 `.impeccable/surfaces/` 中的对应页面约定；实际编辑 UI 前读取技能的 `reference/craft-floor.md`。
-- 保留 ForUI、中文文案和既有交互；按可用窗口宽度同时设计手机与宽屏。用 Flutter 渲染、组件测试和截图验证，不能将 HTML/CSS 检测器作为 Flutter UI 验收依据。
-- 集中检查手机、宽屏、明暗主题与字体缩放，批量修复后最多再确认一轮；记录未实测的平台。
-
-### open-codereview：变更审查
-
-- 功能、安全或架构变更完成相关检查后，使用 `open-codereview` 或当前环境的 Code Review 能力审查本次差异。明确本地 diff 范围或 PR 当前 HEAD，保留用户已有改动。
-- 重点检查 Flutter 分层、响应式与交互，以及 Worker 校验顺序、凭据、目标范围和失败路径。问题须给出文件行号、触发条件与影响；修复后复跑相关检查。
-- 工具不可用时说明限制并基于 `git diff` 与源码完成审查。打开审查面板不等于完成审查；发布 PR 评论、批准或合并须另有用户授权。
-
-### Graphify：架构与调用关系
-
-- 架构、依赖和调用链分析优先查询现有 `graphify-out/graph.json`，先按图谱词汇扩展查询。示例：`graphify query "authorize tunnel target" --budget 1500`；追踪关系可用 `graphify path` 或 `graphify explain`。
-- 核对图谱与当前源码是否一致，引用来源位置，区分 `EXTRACTED`、`INFERRED` 和 `AMBIGUOUS`。技能文档节点不代表项目已实现功能；聚合度与连接数不能单独决定架构拆分。
-- 明确请求初建或更新时使用 `/graphify .`、`/graphify . --update`；普通查询不触发全量重建。输出保持在已忽略的 `graphify-out/`，hooks 和 watch 仅在用户明确要求时启用。
-
-## 提交与拉取请求
-
-提交标题使用简短、明确的中文，例如 `初始化 Worker 基础架构与持续集成`，每次提交聚焦一个主题。PR 应说明行为变化、关联相关问题、列出验证结果和未测试的平台；界面变更附手机与宽屏截图。
-
-## 安全与配置
-
-凭据保存在已忽略的 `.dev.vars` 或 Worker Secrets 中，与 Telegram 会话分开。不保留服务端固定 IP 白名单：仅允许自动获取的 Telegram 官方公网 CIDR，固定端口 443，策略过期或获取失败时拒绝中转。不提交密钥或构建产物。中转默认关闭并返回 `501`；实验性启用和本地回环不代表 Telegram 或边缘中转通过，不能将开发共享令牌写入公开客户端。部署须获得明确授权。
+中文简短标题，一次提交聚焦一个主题。PR 描述行为、验证和未测平台；UI 改动附手机与宽屏证据。保留用户已有修改。

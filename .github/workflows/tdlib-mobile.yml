@@ -26,7 +26,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify native artifact validation
-        run: python3 -m unittest discover -s app/tool -p 'test_*.py'
+        run: python3 -m unittest discover -s tool -p 'test_*.py'
       - name: Android build tools
         if: matrix.platform == 'android' && inputs.artifact_run_id == ''
         run: |
@@ -36,7 +36,7 @@ jobs:
       - name: iOS build tools
         if: matrix.platform == 'ios' && inputs.artifact_run_id == ''
         run: brew install gperf cmake coreutils
-      - run: bash app/tool/build_mobile_tdlib.sh ${{ matrix.platform }}
+      - run: bash tool/build_mobile_tdlib.sh ${{ matrix.platform }}
         if: inputs.artifact_run_id == ''
       - name: Reuse verified native build artifacts
         if: inputs.artifact_run_id != ''
@@ -47,7 +47,7 @@ jobs:
           [[ "$NATIVE_RUN_ID" =~ ^[0-9]+$ ]] || exit 64
           gh run download "$NATIVE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "tdlib-${{ matrix.platform }}-c15d3f5" --dir ".cache/native/mobile-build/${{ matrix.platform }}/package"
       - name: Stage verified native artifacts
-        run: python3 app/tool/install_mobile_tdlib.py .cache/native/mobile-build/${{ matrix.platform }}/package
+        run: python3 tool/install_mobile_tdlib.py .cache/native/mobile-build/${{ matrix.platform }}/package
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: tdlib-${{ matrix.platform }}-c15d3f5
@@ -57,10 +57,10 @@ jobs:
           git clone --depth 1 --branch 3.47.7 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
       - run: flutter pub get
-        working-directory: app
+        working-directory: .
       - name: Build Android with bundled TDLib
         if: matrix.platform == 'android'
-        working-directory: app
+        working-directory: .
         run: |
           export JAVA_HOME="$JAVA_HOME_17_X64"
           flutter build apk --debug
@@ -75,13 +75,13 @@ jobs:
           echo "TGCINE_IOS_SIMULATOR=$simulator" >> "$GITHUB_ENV"
       - name: Verify iOS native ABI and isolated library lifecycle
         if: matrix.platform == 'ios'
-        working-directory: app
+        working-directory: .
         run: |
           flutter test integration_test/tdlib_native_test.dart -d "$TGCINE_IOS_SIMULATOR"
           flutter test integration_test/local_media_test.dart integration_test/library_test.dart integration_test/public_service_test.dart -d "$TGCINE_IOS_SIMULATOR"
       - name: Build unsigned iOS with bundled TDLib
         if: matrix.platform == 'ios'
-        working-directory: app
+        working-directory: .
         run: |
           flutter build ios --debug --no-codesign
           test -f build/ios/iphoneos/Runner.app/Frameworks/tdjson.framework/tdjson

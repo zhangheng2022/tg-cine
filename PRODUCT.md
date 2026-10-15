@@ -8,7 +8,7 @@ adaptive
 
 ## Stack
 
-Flutter / Dart，UI 使用用户指定的 ForUI；Cloudflare Worker 使用 TypeScript。后续 Telegram 接入使用 TDLib；不使用 Go。
+Flutter / Dart，UI 使用用户指定的 ForUI；服务端由独立 tg-cine-worker 仓库使用 TypeScript / Hono 维护。Telegram 接入使用 TDLib；不使用 Go。
 
 ## Product Purpose
 
@@ -32,3 +32,7 @@ Flutter 已接入 Windows Debug 播放器，使用本机工具提供的私有媒
 ## Brand Commitments
 
 使用 ForUI 组件。TG Cine 名称沿用仓库 tg-cine；产品名称尚未另行确认。
+
+## 2026-10-15 仓库拆分
+
+当前仓库只保留客户端，Flutter 位于根目录；服务端、Cloudflare/Hono 技能与运维文档独立维护。新版仅使用 v2，远程切换与旧状态删除尚需部署授权。以上历史平台证据不能作为新版线上验收。

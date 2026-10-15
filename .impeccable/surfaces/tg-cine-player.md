@@ -1,8 +1,8 @@
 ---
 version: 1
 slug: "tg-cine-player"
-primary_target: "app/lib/ui/features/player/views/player_view.dart"
-related_targets: ["app/lib/ui/features/library/views/library_view.dart", "app/lib/app/application.dart"]
+primary_target: "lib/ui/features/player/views/player_view.dart"
+related_targets: ["lib/ui/features/library/views/library_view.dart", "lib/app/application.dart"]
 ---
 
 # Flutter 播放器

@@ -19,7 +19,7 @@ Windows 使用 DPAPI、目录 ACL 与排他锁；移动端使用同一 `MobileSe
 在仓库根目录运行：
 
 ```powershell
-powershell -File app/tool/run_telegram_app.ps1 -ApiEnvFile <本机API配置路径>
+powershell -File tool/run_telegram_app.ps1 -ApiEnvFile <本机API配置路径>
 ```
 
 Windows 启动脚本默认连接公共服务，自动取得独立凭据，不读取开发中转令牌；默认使用独立 `app-account` 会话。需要复用既有开发授权时添加 `-UseExistingSession`；同一会话不能同时在外部工具和 App 中打开。不要在聊天中发送手机号、验证码、密码或配置内容。直接运行 `flutter run` 未注入应用标识或本机配置时，只提供未配置界面；静态设计稿不执行 Telegram 授权。
@@ -37,11 +37,11 @@ python tool/install_mobile_tdlib.py <构建包目录>
 
 Android 放入已忽略的 `android/app/src/main/jniLibs/`；iOS 放入已忽略的 `ios/TDLib/Frameworks/tdjson.xcframework`，由本地 CocoaPod 嵌入。携带项目 API 标识的 Debug/Profile/Release 构建均检查必需原生库，缺失直接失败；没有库的 UI 模板构建不计为 Telegram 接入通过。Android 已完成真实授权和片库验收；iOS 模拟器原生库、隔离存储/导入通过，带框架无签名设备包构建成功，真实 iPhone 仍需签名安装环境。详见 [移动原生记录](mobile-native.md)。
 
-在 `app/` 准备本机 Debug 配置：
+在仓库根目录 准备本机 Debug 配置：
 
 ```text
 dart run tool/prepare_mobile_config.dart <API配置> <relay-bridge.json> <令牌文件>
-flutter run --debug -d <设备ID> --dart-define-from-file=../.cache/deployment/flutter-mobile-defines.json
+flutter run --debug -d <设备ID> --dart-define-from-file=.cache/deployment/flutter-mobile-defines.json
 ```
 
 该配置包含开发凭据，只用于本机 Debug，不可分发。Android/iOS 的公开构建入口拒绝非空开发配置。默认服务现已支持自动配置、独立设备凭据、刷新/撤销与持久额度；公开构建只注入项目 Telegram 应用标识并打包 TDLib，不携带共享开发令牌。Windows Debug 可额外指定 `TG_CINE_USE_DEFAULT_SERVICE=true`，保留本机会话路径并改用公共凭据；构建和验收边界见 [默认服务](public-service.md)。
