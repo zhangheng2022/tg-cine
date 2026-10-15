@@ -39,10 +39,10 @@ cmake --build "$nativeBuildRoot/build-windows" --config Release --target tdjson 
 
 ## Dart 验证
 
-在 `app/` 执行：
+在仓库根目录 执行：
 
 ```powershell
-dart run tool/verify_tdlib.dart ../.cache/native/build-windows/Release/tdjson.dll
+dart run tool/verify_tdlib.dart .cache/native/build-windows/Release/tdjson.dll
 ```
 
 工具仅接受本机库路径，通过共享 `tool/support/tdlib_probe.dart` 调用四个现代 JSON 接口；读取版本，检查 `authorizationStateWaitTdlibParameters`，再等待 `authorizationStateClosed`。响应在下一次 native 调用前复制，请求内存由 Dart 释放；接收使用 `td_receive(0)`，每批最多 32 个事件后异步让出，避免阻塞同一 isolate 中的桥接。单次请求以 `@extra` 关联、按 `@client_id` 过滤，状态等待有 5 秒上限；工具仅支持单客户端/单接收者。失败不打印原生响应或账号信息。接口约定见 [TDLib JSON 文档](https://core.telegram.org/tdlib/docs/td__json__client_8h.html)。
@@ -57,15 +57,15 @@ Windows x64 Release 构建成功；Dart 工具已通过格式化、静态分析�
 
 完整本机来源与产物记录保存在已忽略的 `.cache/native/build-manifest.json`；第三方原生单元测试、Native Assets 打包和 Flutter 内加载尚未验证。
 
-本机直连源码中的默认 DC2 `149.154.167.51:443` 在 5 秒内未建立 TCP 连接。后续经用户授权部署新 Worker，十个固定目标的边缘 TCP/MTProto 握手已通过，见 [部署记录](worker-deployment.md)。Windows TDLib 经 Dart 桥接的原生验证也已通过，范围如下。
+本机直连源码中的默认 DC2 `149.154.167.51:443` 在 5 秒内未建立 TCP 连接。后续经用户授权部署新 Worker，十个固定目标的边缘 TCP/MTProto 握手已通过，见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/history/worker-deployment.md)。Windows TDLib 经 Dart 桥接的原生验证也已通过，范围如下。
 
 ## 线上 TDLib 验证
 
-在 `app/` 使用本机开发令牌文件，秘密只读入内存：
+在仓库根目录 使用本机开发令牌文件，秘密只读入内存：
 
 ```powershell
-$env:TG_CINE_RELAY_TOKEN_FILE = (Resolve-Path ../.cache/deployment/relay-token.txt).Path
-dart run tool/verify_tdlib_relay.dart ../.cache/native/build-windows/Release/tdjson.dll ../.cache/deployment/relay-bridge.json
+$env:TG_CINE_RELAY_TOKEN_FILE = (Resolve-Path .cache/deployment/relay-token.txt).Path
+dart run tool/verify_tdlib_relay.dart .cache/native/build-windows/Release/tdjson.dll .cache/deployment/relay-bridge.json
 ```
 
 工具在未提供初始化参数时调用当前固定版本的 [testProxy](https://core.telegram.org/tdlib/docs/classtd_1_1td__api_1_1test_proxy.html)。源码 `ProxyChecker.cpp` 实际执行 SOCKS5、MTProto 与临时 AuthKeyHandshake；不创建账号数据库、不需要 API 凭据。五个 DC 经 `tg-cine.zhangheng.eu.org` 返回 `ok`：DC1 4438 ms、DC2 2321 ms、DC3 4299 ms、DC4 2266 ms、DC5 2752 ms，随后原生客户端和桥接正常关闭。此结果比 Node 的单包 resPQ 探测覆盖更多原生握手步骤，仍不等于账号授权、媒体下载或持续吞吐。
@@ -75,7 +75,7 @@ dart run tool/verify_tdlib_relay.dart ../.cache/native/build-windows/Release/tdj
 先执行默认登录前检查，API 配置保持在原目录，只读取 `TG_API_ID` / `TG_API_HASH`，不输出字段值：
 
 ```powershell
-dart run tool/telegram_login.dart ../.cache/native/build-windows/Release/tdjson.dll ../.cache/deployment/relay-bridge.json C:/Users/96227/Desktop/TGvideo/.env
+dart run tool/telegram_login.dart .cache/native/build-windows/Release/tdjson.dll .cache/deployment/relay-bridge.json C:/Users/96227/Desktop/TGvideo/.env
 ```
 
 已通过 `networkTypeNone`→启用环回 SOCKS5→设置参数的初始化顺序、`getProxies` 启用状态、显式代理 `pingProxy`、等待手机号和正常关闭。TDLib 固定源码在 `init_options_and_network()` 中按队列处理网络类型及代理，然后初始化其他管理器；没有为了测试调用 `disableProxy` 或直接目标 ping。第二次运行也成功解密并复用同一数据库。
@@ -83,7 +83,7 @@ dart run tool/telegram_login.dart ../.cache/native/build-windows/Release/tdjson.
 需要实际登录时，在本机 PowerShell 终端从仓库根目录执行；不是聊天命令，也不把秘密放入命令行：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env
 ```
 
 `Bypass` 只应用于该子进程，不修改系统执行策略。程序在显式 `--login` 或 `--select-media` 且存在本机终端时启用网络。登录支持手机号、Telegram 验证码、邮箱/邮箱验证码和两步验证密码；手机号允许空格分组并正常显示，验证码及密码隐藏字符，密码不裁剪空白。按回车后显示提交提示，请求超时明确反馈。Ctrl+C 恢复回显并关闭客户端。登录成功还须验证 `getMe`，只保存不含账号信息的结果状态；工具不注册新账号或发起购买。验证码和密码不要发送到聊天中。
@@ -95,7 +95,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1
 从聊天选择验收样本：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env -SelectMedia
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env -SelectMedia
 ```
 
 入口要求已授权会话，分页列出主列表和归档中的聊天，不按频道、群或私聊类型过滤，再查询所选聊天的普通视频和视频文件。名称只显示在本机；输入序号选择，`m` 查询更多，`q` 取消。选择保存在私有会话目录的 `media-selection.json`，仅包含时间、聊天 ID、消息 ID，未下载视频，也没有导入片库。控制字符被过滤；自毁视频不能选为持久验收样本。
@@ -111,7 +111,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1
 2026-10-13 恢复原选择，保留短样本的选择与成功报告。第一次复测首段读取成功，中段等待 60 秒超时；开发工具将范围等待放宽到两分钟，512 KiB 读取上限不变。2026-10-13T01:07:24Z 第二次复测通过：头部、中段、尾部偏移分别为 0 / 629,669,888 / 1,259,339,776，共读出 1,511,093 字节，耗时 46,086 / 39,353 / 54,518 ms，头部复读一致；样本为 2,982 秒的 MP4。本次不再复现全程零字节，但各段实际耗时都低于原 60 秒限制，不能据此断言放宽等待是唯一原因，也不能宣称此前故障根因已定位。未修改或重新部署 Worker。
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env -VerifyMedia
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env -VerifyMedia
 ```
 
 `--verify-media` 仅复用已授权会话，不发起登录。入口恢复所选来源并读取已选消息，按 512 KiB 上限检验头部、中部、尾部并复读头部。先检查 `getFileDownloadedPrefixSize`；缓存命中直接读取，缺少字节时复用或启动最多请求 2 MiB 的连续下载窗口。新窗口等待窗口末端可读再返回第一块，避免另一条轨道提前替换尚未完成的预取；已缓存和未切窗读取仍按请求量检查。相邻读取不逐次取消，切换到未缓存的新位置、失败或关闭时取消窗口；TDLib 分片对齐可能缓存额外字节。可读范围轮询的等待阈值为两分钟，再调用 `readFilePart`；原生 RPC 有独立超时，禁止读取空洞。未知大小、无效文件、自毁视频及外部 URL 文件生成均不进入读取。TDLib 的分片缓存位于私有会话目录，不导出完整视频；总缓存自动清理尚未实现。
@@ -121,7 +121,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1
 ### 本机解码验证入口
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env -VerifyPlayback
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tool/login_local.ps1 -ApiEnvFile C:/Users/96227/Desktop/TGvideo/.env -VerifyPlayback
 ```
 
 入口复用已授权会话，恢复同一所选消息并校验文件信息；使用本机已安装的 VLC，从 0 秒和时长中点分别解码两秒，每次读取仍须等待 TDLib 可读范围。媒体只通过 `127.0.0.1` 的随机路径提供，校验 Host 和单个 HTTP Range；读取限制为 512 KiB、原生请求串行，允许一个等待请求。该端点只服务一个解码进程，新范围终止旧响应以解除写入阻塞；每段最多 32 MiB / 64 个请求，VLC 最多等待八分钟。失败时截断响应，不填充空洞；结束后停止后续读取，关闭端口和该次 VLC 子进程。无交互验证模式向 PowerShell 传递原生退出码，失败不能返回成功。
@@ -158,7 +158,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1
 
 ### 2026-10-13 优化执行与复测
 
-已部署有界下行窗口，线上版本为 `466e7289-959b-4437-bb97-7ce884690ed9`，兼容 v1 逐帧 ACK；安全边界见 [Worker 架构](worker-architecture.md)。保持客户端原先的读取逻辑，在 2026-10-13T02:28:55Z 完成同一视频的对照，首轮开始下载时 TDLib 的已下载字节为 0，桥接记录到实际媒体传输：
+已部署有界下行窗口，线上版本为 `466e7289-959b-4437-bb97-7ce884690ed9`，兼容 v1 逐帧 ACK；安全边界见 [Worker 架构](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/architecture.md)。保持客户端原先的读取逻辑，在 2026-10-13T02:28:55Z 完成同一视频的对照，首轮开始下载时 TDLib 的已下载字节为 0，桥接记录到实际媒体传输：
 
 | 检查 | 优化前 | 仅 Worker 窗口优化后 |
 | --- | --- | --- |
@@ -177,10 +177,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File app/tool/login_local.ps1
 
 ### 播放会话验收入口
 
-在 `app/` 设置 `TG_CINE_RELAY_TOKEN_FILE` 指向已忽略的中转令牌文件后执行：
+在仓库根目录 设置 `TG_CINE_RELAY_TOKEN_FILE` 指向已忽略的中转令牌文件后执行：
 
 ```powershell
-dart run tool/telegram_login.dart ../.cache/native/build-windows/Release/tdjson.dll ../.cache/deployment/relay-bridge.json C:/Users/96227/Desktop/TGvideo/.env --verify-session
+dart run tool/telegram_login.dart .cache/native/build-windows/Release/tdjson.dll .cache/deployment/relay-bridge.json C:/Users/96227/Desktop/TGvideo/.env --verify-session
 ```
 
 要求所选视频至少 180 秒。复用本机加密会话，由同一 VLC 进程先播放 60 秒、跳到中点播放 15 秒、再回到 30 秒处播放 15 秒。控制接口只绑定 `127.0.0.1`，使用每次随机密码；原生日志、控制密码、播放 URL 和影片信息不写入报告。VLC 使用 dummy 视频输出和静音的 Windows `mmdevice` 音频输出，禁用音量保存；报告区分解码、输出计数与用户实际听感，未执行听感验收。

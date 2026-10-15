@@ -1,8 +1,8 @@
 ---
 version: 1
 slug: "app-lib-home-screen-dart"
-primary_target: "app/lib/ui/features/home/views/home_view.dart"
-related_targets: ["app/lib/app/application.dart", "app/lib/ui/core/app_empty_state.dart"]
+primary_target: "lib/ui/features/home/views/home_view.dart"
+related_targets: ["lib/app/application.dart", "lib/ui/core/app_empty_state.dart"]
 ---
 
 # Flutter 手机端初始化

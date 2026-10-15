@@ -17,15 +17,15 @@ Git 获取超时时，可通过 `TGCINE_TDLIB_ARCHIVE` 使用固定源码 ZIP，
 
 ## 构建与验证
 
-Linux/macOS 在仓库根目录构建，安装及 Flutter 命令在 `app/` 执行：
+Linux/macOS 在仓库根目录构建，安装及 Flutter 命令在仓库根目录 执行：
 
 ```text
-bash app/tool/build_mobile_tdlib.sh android
-python tool/install_mobile_tdlib.py ../.cache/native/mobile-build/android/package --check
-python tool/install_mobile_tdlib.py ../.cache/native/mobile-build/android/package
-flutter build apk --debug --dart-define-from-file=../.cache/deployment/flutter-public-defines.json
+bash tool/build_mobile_tdlib.sh android
+python tool/install_mobile_tdlib.py .cache/native/mobile-build/android/package --check
+python tool/install_mobile_tdlib.py .cache/native/mobile-build/android/package
+flutter build apk --debug --dart-define-from-file=.cache/deployment/flutter-public-defines.json
 flutter test integration_test/tdlib_native_test.dart -d <设备ID>
-flutter test integration_test/default_telegram_test.dart -d <设备ID> --dart-define-from-file=../.cache/deployment/flutter-public-defines.json
+flutter test integration_test/default_telegram_test.dart -d <设备ID> --dart-define-from-file=.cache/deployment/flutter-public-defines.json
 ```
 
 iOS 将构建参数替换为 `ios`，必须使用 macOS/Xcode；对应框架由 CocoaPods 嵌入。携带项目 API 标识时，Android 检查两 ABI 库并限制相应架构，iOS 检查 XCFramework；Debug/Profile/Release 均拒绝缺库。开发私有配置仍仅允许 Debug。产物、配置与会话保持忽略，不提交仓库。

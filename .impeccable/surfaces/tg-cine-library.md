@@ -1,8 +1,8 @@
 ---
 version: 1
 slug: "tg-cine-library"
-primary_target: "app/lib/ui/features/library/views/library_view.dart"
-related_targets: ["app/lib/ui/features/library/views/media_details_view.dart"]
+primary_target: "lib/ui/features/library/views/library_view.dart"
+related_targets: ["lib/ui/features/library/views/media_details_view.dart"]
 ---
 
 # 渐进片库与文件详情

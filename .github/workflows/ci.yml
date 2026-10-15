@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 30
     defaults:
       run:
-        working-directory: app
+        working-directory: .
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -30,15 +30,6 @@ jobs:
       - run: flutter test
       - name: Verify mobile native artifact installer
         run: python3 -m unittest discover -s tool -p 'test_*.py'
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: worker/package-lock.json
-      - run: npm ci
-        working-directory: worker
-      - run: npm run test:relay
-        working-directory: worker
       - run: flutter build web
       - name: Build Android debug APK
         run: |
@@ -63,7 +54,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: app
+        working-directory: .
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -83,26 +74,3 @@ jobs:
       - name: Verify encrypted media storage on native hosts
         run: flutter test test/data/repositories/sqlite_media_repository_test.dart
       - run: flutter build ${{ matrix.target }}
-
-  worker:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      WRANGLER_SEND_METRICS: 'false'
-    defaults:
-      run:
-        working-directory: worker
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: worker/package-lock.json
-      - run: npm ci
-      - run: npm run format:check
-      - run: npm run check
-      - run: npm test
-      - run: npm run build

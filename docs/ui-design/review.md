@@ -44,6 +44,6 @@ Impeccable Documenter 在独立子代理中执行，读取 `reference/degraded/d
 
 ## 验证与写入边界
 
-保留 `app/`、`worker/`、`AGENTS.md`、`PRODUCT.md`、根 `DESIGN.md`、`.impeccable/design.json` 和两个 surface brief；不增加重复视觉系统文档，不提交，不部署。现有用户改动保持原样。
+保留 ``、`worker/`、`AGENTS.md`、`PRODUCT.md`、根 `DESIGN.md`、`.impeccable/design.json` 和两个 surface brief；不增加重复视觉系统文档，不提交，不部署。现有用户改动保持原样。
 
 本轮未验证 Flutter 运行、组件交互、真机、六个平台原生行为、读屏、键盘导航、系统返回、横屏、网络可达、Telegram 登录、媒体解码、真实中转或 App Store 审核。Worker 当前入口仍返回 `501 / TUNNEL_NOT_IMPLEMENTED`。这些边界不因静态视觉审查而改变。

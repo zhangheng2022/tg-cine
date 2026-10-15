@@ -1,8 +1,8 @@
 ---
 version: 1
 slug: "tg-cine-app-foundation"
-primary_target: "app/lib/ui/features/home/views/home_view.dart"
-related_targets: ["app/lib/ui/features/settings/views/settings_view.dart", "app/lib/ui/features/sources/views/sources_view.dart", "app/lib/ui/features/privacy/views/local_data_view.dart"]
+primary_target: "lib/ui/features/home/views/home_view.dart"
+related_targets: ["lib/ui/features/settings/views/settings_view.dart", "lib/ui/features/sources/views/sources_view.dart", "lib/ui/features/privacy/views/local_data_view.dart"]
 ---
 
 # Flutter 应用基础界面

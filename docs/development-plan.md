@@ -1,3 +1,5 @@
+> 当前拆仓与 v2 状态见 [迁移说明](repository-split.md)。下文是带日期的历史开发验收，不代表新版已经部署。
+
 # 分阶段开发与执行记录
 
 更新时间：2026-10-15。基线、真实 Android 片库、双端原生交付与远程 CI 已按顺序完成并提交同步。iPhone 有设备但没有签名安装环境，真实 iOS 授权仍待独立验收。保留公开发行和六平台目标；本轮不部署 Worker。
@@ -25,12 +27,12 @@
 
 ## 本次交付
 
-- `worker/src/relay.ts`：已校验目标 TCP 连接、WebSocket 二进制转发、兼容逐帧 ACK 的有界下行窗口、队列/流量/时长限制、脱敏错误和双端清理。`RELAY_ENABLED` 默认 `false`，默认健康检查仍声明中转关闭。
-- `app/lib/data/services/relay/relay_bridge.dart`：仅监听本机环回地址的 SOCKS5 桥接，公共目标按官方动态 CIDR 校验并编码；凭据仅在 WSS Authorization 中携带。已接入原生 Flutter 登录；默认模式在连接前自动取得短期设备凭据，不读取共享开发令牌。
-- `app/tool/relay_bridge.dart`：人工可运行的原生可行性入口；`worker/scripts/verify-local-relay.mjs` 与 `app/tool/verify_relay.dart` 自动验证真实本地 workerd/TCP 的 1 MiB 回环与退出。
-- `app/tool/verify_tdlib.dart`：加载官方固定提交构建的 Windows x64 库，检查现代 JSON ABI、初始状态与正常关闭；不设置凭据或发起登录。来源、复现命令及哈希见 [原生构建记录](native-tdlib.md)。
-- `app/tool/verify_tdlib_relay.dart`：共享非阻塞 JSON 探测，真实验证 TDLib→环回 SOCKS5→Dart WSS→线上 Worker→Telegram 的五个 DC 密钥握手；不需要 API 凭据或数据库。
-- `app/tool/telegram_login.dart`：默认只做登录前检查；`--login` 用本机终端授权，手机号回显、验证码/密码隐藏；`--select-media` 复用授权会话，从主列表和归档全部聊天中选择视频，`--verify-media` 验证所选样本的可读范围，`--verify-playback` 通过私有环回 HTTP 入口检查本机 VLC 视频解码。API 配置从原目录只读；独立开发会话的随机数据库密钥由 DPAPI 保护，目录限当前 Windows 用户/SYSTEM，损坏或缺失密钥不覆盖原数据。
+- 服务端仓库的 `src/relay.ts`：已校验目标 TCP 连接、WebSocket 二进制转发、兼容逐帧 ACK 的有界下行窗口、队列/流量/时长限制、脱敏错误和双端清理。`RELAY_ENABLED` 默认 `false`，默认健康检查仍声明中转关闭。
+- `lib/data/services/relay/relay_bridge.dart`：仅监听本机环回地址的 SOCKS5 桥接，公共目标按官方动态 CIDR 校验并编码；凭据仅在 WSS Authorization 中携带。已接入原生 Flutter 登录；默认模式在连接前自动取得短期设备凭据，不读取共享开发令牌。
+- `tool/relay_bridge.dart`：人工可运行的原生可行性入口；服务端仓库的 `scripts/verify-local-relay.mjs` 与 `tool/verify_relay.dart` 自动验证真实本地 workerd/TCP 的 1 MiB 回环与退出。
+- `tool/verify_tdlib.dart`：加载官方固定提交构建的 Windows x64 库，检查现代 JSON ABI、初始状态与正常关闭；不设置凭据或发起登录。来源、复现命令及哈希见 [原生构建记录](native-tdlib.md)。
+- `tool/verify_tdlib_relay.dart`：共享非阻塞 JSON 探测，真实验证 TDLib→环回 SOCKS5→Dart WSS→线上 Worker→Telegram 的五个 DC 密钥握手；不需要 API 凭据或数据库。
+- `tool/telegram_login.dart`：默认只做登录前检查；`--login` 用本机终端授权，手机号回显、验证码/密码隐藏；`--select-media` 复用授权会话，从主列表和归档全部聊天中选择视频，`--verify-media` 验证所选样本的可读范围，`--verify-playback` 通过私有环回 HTTP 入口检查本机 VLC 视频解码。API 配置从原目录只读；独立开发会话的随机数据库密钥由 DPAPI 保护，目录限当前 Windows 用户/SYSTEM，损坏或缺失密钥不覆盖原数据。
 - 外观设置经 App 组合根注入；UI 依赖 Domain 端口，不直接访问插件。`shared_preferences` 只保存非关键外观配置，不保存 Telegram 密钥、会话、片库或播放进度。
 - CI 加入 Dart/Worker 组合联调，以及 Windows、Linux、macOS、无签名 iOS 的构建矩阵；仍无部署步骤。
 
@@ -43,7 +45,7 @@
 | `npm run test:relay` | 已通过；实际 workerd 与 TCP echo 验证 1,048,576 字节内容及顺序，清理后进程正常退出 |
 | 现有 TGvideo 原型 | 使用该目录的本机配置重新探测 5 个 DC，均返回 resPQ；配置未复制、秘密未输出、未部署该仓库 |
 | TDLib Windows 原生库 | 固定官方提交构建 1.8.68，现代 JSON C 导出和系统 DLL 依赖已核对；Dart 实际加载、初始状态、正常关闭通过 |
-| 新 Worker 实验部署 | 自定义域名无代理健康检查、鉴权/白名单与十个固定目标的边缘 TCP/MTProto 握手通过；误加目标已删除并验证拒绝，workers.dev 本机直连超时，详见 [部署记录](worker-deployment.md) |
+| 新 Worker 实验部署 | 自定义域名无代理健康检查、鉴权/白名单与十个固定目标的边缘 TCP/MTProto 握手通过；误加目标已删除并验证拒绝，workers.dev 本机直连超时，详见 [部署记录](https://github.com/zhangheng2022/tg-cine-worker/blob/main/docs/history/worker-deployment.md) |
 | TDLib 经新桥接 | 五个 DC 的原生 `testProxy` 完整临时密钥握手通过，耗时 2266–4438 ms；不是 Node 单包握手的替代说法 |
 | 本机登录前检查 | 官方 API 配置只读，网络关闭→启用环回代理→初始化顺序、启用状态、`pingProxy`、等待手机号与正常关闭通过；重复运行复用 DPAPI 密钥/数据库 |
 | 本机账号授权 | 用户在本机终端完成登录，`getMeVerified=true`；重新打开私有加密会话后也成功调用 `getMe` |

@@ -25,11 +25,11 @@
 | 其余宽度 < 1024 | 88dp 图标侧栏；每项通过可见文字提示补充名称。 |
 | 宽度 ≥ 1024 | 196dp 侧栏，显示图标和文字标签。 |
 
-主体最大宽度 1080dp，居中靠上；主体额外横向内边距在底栏布局为 8dp、侧栏布局为 20dp，继续保留 `FScaffold` 默认内边距。设置和本机数据说明的阅读宽度最多 720dp。阈值来自 [`HomeView`](../app/lib/ui/features/home/views/home_view.dart)，不是设备或平台分类。
+主体最大宽度 1080dp，居中靠上；主体额外横向内边距在底栏布局为 8dp、侧栏布局为 20dp，继续保留 `FScaffold` 默认内边距。设置和本机数据说明的阅读宽度最多 720dp。阈值来自 [`HomeView`](../lib/ui/features/home/views/home_view.dart)，不是设备或平台分类。
 
 ## 主题、滚动与操作
 
-继续使用 [`theme.dart`](../app/lib/theme/theme.dart) 中的 `FTheme.neutral.light.touch` / `dark.touch`，ForUI 默认 Inter、平台中文字体回退和 Lucide 图标。颜色与排版从 `context.theme` 获取，中文文案从 `context.l10n` 获取；没有新增或获批的品牌 token 体系。
+继续使用 [`theme.dart`](../lib/theme/theme.dart) 中的 `FTheme.neutral.light.touch` / `dark.touch`，ForUI 默认 Inter、平台中文字体回退和 Lucide 图标。颜色与排版从 `context.theme` 获取，中文文案从 `context.l10n` 获取；没有新增或获批的品牌 token 体系。
 
 外观默认跟随系统。App 组合根注入设置仓库，ViewModel 依赖 Domain 端口，UI 不直接调用存储插件；`shared_preferences` 仅保存版本化的外观配置。保存成功后才切换选择；保存中禁用重复操作，失败显示重试提示并保留此前外观。读取失败保留原记录，重试成功前不写入。
 
@@ -43,7 +43,7 @@
 
 | 证据 | 已验证范围 |
 | --- | --- |
-| Flutter 格式化、静态分析、测试 | 已通过；新增 tooltip 测试后由 31 项增至 32 项。布局测试覆盖 320×568、800×900、1440×900，明暗主题及 1/1.3/2 倍字号，共 18 个组合；另含空状态导航、外观持久化与失败重试。测试源码见 [`application_test.dart`](../app/test/app/application_test.dart)，执行状态见 [分阶段记录](development-plan.md)。 |
+| Flutter 格式化、静态分析、测试 | 已通过；新增 tooltip 测试后由 31 项增至 32 项。布局测试覆盖 320×568、800×900、1440×900，明暗主题及 1/1.3/2 倍字号，共 18 个组合；另含空状态导航、外观持久化与失败重试。测试源码见 [`application_test.dart`](../test/app/application_test.dart)，执行状态见 [分阶段记录](development-plan.md)。 |
 | Android 运行时截图 | Android 16 / SDK 36、Pixel_10 AVD、160dpi；12 张基线加 1 张 tooltip，共 13 张。覆盖 390×844 浅色 1.0、320×780 深色 1.3、800×900 深色 1.3、1440×900 浅色 1.0。由 ADB screencap/pull 获取，未合成系统栏；APK 和每张 PNG 的 SHA256 见 [capture-manifest.json](../.impeccable/review/foundation/capture-manifest.json)。这组截图没有覆盖全部 18 个测试组合。 |
 | 独立视觉审查 | [review.md](../.impeccable/review/foundation/review.md) 的唯一 P2 为中屏图标导航缺少可见提示；加入 `FTooltip` 后，[verdict.md](../.impeccable/review/foundation/verdict.md) 记为 resolved / ship。最终确认仅复核该 P2 及其局部回归，未展开新一轮审查。 |
 | 本机构建 | Android debug APK、Web、Windows release 已通过；构建成功不等于各平台运行时视觉和业务验收。 |

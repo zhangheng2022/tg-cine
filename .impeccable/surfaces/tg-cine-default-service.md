@@ -1,8 +1,8 @@
 ---
 version: 1
 slug: tg-cine-default-service
-primary_target: app/lib/ui/features/settings/views/settings_view.dart
-related_targets: [app/lib/ui/features/sources/views/sources_view.dart]
+primary_target: lib/ui/features/settings/views/settings_view.dart
+related_targets: [lib/ui/features/sources/views/sources_view.dart]
 ---
 
 # 默认服务接入状态

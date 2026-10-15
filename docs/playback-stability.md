@@ -79,7 +79,7 @@ HTTP 轮确认 1920×960 和 44100 Hz，完整读取 35,247,535 字节，读取�
 - `tool/player_calibration.dart`：普通 Flutter 校准入口，自动走现有片库播放操作；用于本机合成视频与授权片段，不接受外部网络 URL。
 - `integration_test/player_test.dart`：支持文件/HTTP、只解码和手动前台门控；远距离检查用 `midpoint`、`midpoint-back`、`tail`、`tail-back` 独立选择，片尾提前 75 秒避免窗口撞到结尾。
 
-在 `app/` 执行普通校准，例如：
+在仓库根目录 执行普通校准，例如：
 
 ```powershell
 flutter run -d windows -t tool/player_calibration.dart --dart-define=TG_CINE_CALIBRATION_MEDIA_FILE=<合成视频绝对路径> --dart-define=TG_CINE_TEST_OUTPUT_DIR=<已忽略的绝对输出目录>
