@@ -29,7 +29,42 @@ jobs:
         if: matrix.platform == 'ios'
         run: brew install gperf cmake coreutils
       - run: bash app/tool/build_mobile_tdlib.sh ${{ matrix.platform }}
+      - name: Stage verified native artifacts
+        run: python3 app/tool/install_mobile_tdlib.py .cache/native/mobile-build/${{ matrix.platform }}/package
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: tdlib-${{ matrix.platform }}-c15d3f5
           path: .cache/native/mobile-build/${{ matrix.platform }}/package/
+      - name: Install Flutter
+        run: |
+          git clone --depth 1 --branch 3.47.7 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter pub get
+        working-directory: app
+      - name: Build Android with bundled TDLib
+        if: matrix.platform == 'android'
+        working-directory: app
+        run: |
+          export JAVA_HOME="$JAVA_HOME_17_X64"
+          flutter build apk --debug
+          unzip -l build/app/outputs/flutter-apk/app-debug.apk | grep 'lib/arm64-v8a/libtdjson.so'
+          unzip -l build/app/outputs/flutter-apk/app-debug.apk | grep 'lib/x86_64/libtdjson.so'
+      - name: Start iOS simulator
+        if: matrix.platform == 'ios'
+        run: |
+          simulator=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; devices=json.load(sys.stdin)["devices"]; print(next(d["udid"] for runtime,items in devices.items() if ".iOS-" in runtime for d in items if d["name"].startswith("iPhone")))')
+          xcrun simctl boot "$simulator"
+          xcrun simctl bootstatus "$simulator" -b
+          echo "TGCINE_IOS_SIMULATOR=$simulator" >> "$GITHUB_ENV"
+      - name: Verify iOS native ABI and isolated library lifecycle
+        if: matrix.platform == 'ios'
+        working-directory: app
+        run: |
+          flutter test integration_test/tdlib_native_test.dart -d "$TGCINE_IOS_SIMULATOR"
+          flutter test integration_test/local_media_test.dart integration_test/library_test.dart integration_test/public_service_test.dart -d "$TGCINE_IOS_SIMULATOR"
+      - name: Build unsigned iOS with bundled TDLib
+        if: matrix.platform == 'ios'
+        working-directory: app
+        run: |
+          flutter build ios --debug --no-codesign
+          test -f build/ios/iphoneos/Runner.app/Frameworks/tdjson.framework/tdjson
