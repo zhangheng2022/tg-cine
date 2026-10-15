@@ -36,16 +36,18 @@ class SourcesView extends StatelessWidget {
         );
 }
 
-String _failureText(BuildContext context, TelegramFailure failure) =>
-    switch (failure) {
-      TelegramFailure.invalidInput => context.l10n.telegramInvalidInput,
-      TelegramFailure.authentication =>
-        context.l10n.telegramAuthenticationError,
-      TelegramFailure.serviceLimited => context.l10n.telegramServiceLimited,
-      TelegramFailure.storage => context.l10n.telegramStorageError,
-      TelegramFailure.connection => context.l10n.telegramConnectionError,
-      TelegramFailure.unavailable => context.l10n.telegramUnavailable,
-    };
+String _failureText(
+  BuildContext context,
+  TelegramFailure failure,
+) => switch (failure) {
+  TelegramFailure.invalidInput => context.l10n.telegramInvalidInput,
+  TelegramFailure.authentication => context.l10n.telegramAuthenticationError,
+  TelegramFailure.serviceLimited => context.l10n.telegramServiceLimited,
+  TelegramFailure.storage => context.l10n.telegramStorageError,
+  TelegramFailure.connection => context.l10n.telegramConnectionError,
+  TelegramFailure.unavailable => context.l10n.telegramUnavailable,
+  TelegramFailure.linkUnsupported => context.l10n.librarySourceLinkUnsupported,
+};
 
 class _AccountForm extends StatefulWidget {
   const _AccountForm({required this.viewModel, super.key});

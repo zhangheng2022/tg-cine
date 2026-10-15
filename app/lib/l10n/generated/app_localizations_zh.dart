@@ -392,6 +392,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get librarySourceLinkError => '暂时无法取得源消息链接，请检查来源权限后重试。';
 
   @override
+  String get librarySourceLinkUnsupported => '这条消息不支持源链接。你仍可在原聊天中查找。';
+
+  @override
   String get libraryDetailsUnavailable => '当前条目已不可用，请返回片库。';
 
   @override

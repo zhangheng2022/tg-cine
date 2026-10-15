@@ -53,6 +53,7 @@ enum TelegramFailure {
   storage,
   unavailable,
   serviceLimited,
+  linkUnsupported,
 }
 
 class TelegramException implements Exception {

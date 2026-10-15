@@ -120,6 +120,15 @@ void main() {
               await tester.ensureVisible(button);
               await tester.pumpAndSettle();
               expect(tester.takeException(), isNull);
+              library.linkSupported = false;
+              await tester.tap(button);
+              await tester.pumpAndSettle();
+              final unsupported = find.text('这条消息不支持源链接。你仍可在原聊天中查找。');
+              await tester.ensureVisible(unsupported);
+              await tester.pumpAndSettle();
+              expect(unsupported, findsOneWidget);
+              expect(find.text('链接已复制，可在 Telegram 中查看'), findsNothing);
+              expect(tester.takeException(), isNull);
               await tester.pumpWidget(const SizedBox());
               await tester.pumpAndSettle();
             },

@@ -8,6 +8,7 @@ import '../../domain/models/local_media.dart';
 import '../services/telegram/telegram_history_service.dart';
 import '../services/telegram/telegram_credentials.dart';
 import '../services/telegram/tdlib_probe.dart';
+import '../services/telegram/telegram_video_file.dart';
 
 typedef TelegramRequest = Future<Map<String, dynamic>> Function(
   Map<String, dynamic>,
@@ -498,11 +499,45 @@ class TdlibTelegramRepository
       throw const TelegramException(TelegramFailure.invalidInput);
     }
     await _ensureSource(scope, item.sourceId);
+    // getMessageLink is offline; reopening restores metadata but not TDLib's message cache.
+    final message = await scope.connection.request({
+      '@type': 'getMessage',
+      'chat_id': item.sourceId,
+      'message_id': item.messageId,
+    });
+    _checkLibrary(scope, item.sourceId);
+    if (message['@type'] != 'message' ||
+        message['chat_id'] != item.sourceId ||
+        message['id'] != item.messageId ||
+        message['self_destruct_type'] != null) {
+      throw const TelegramException(TelegramFailure.unavailable);
+    }
+    final file = videoFile(message);
+    if (file == null ||
+        (file['remote'] as Map?)?['unique_id'] != item.remoteUniqueId ||
+        file['size'] != item.sizeBytes) {
+      throw const TelegramException(TelegramFailure.unavailable);
+    }
+    final properties = await scope.connection.request({
+      '@type': 'getMessageProperties',
+      'chat_id': item.sourceId,
+      'message_id': item.messageId,
+    });
+    _checkLibrary(scope, item.sourceId);
+    if (properties['@type'] != 'messageProperties' ||
+        properties['can_get_link'] is! bool) {
+      throw const TelegramException(TelegramFailure.unavailable);
+    }
+    if (properties['can_get_link'] != true) {
+      throw const TelegramException(TelegramFailure.linkUnsupported);
+    }
     final result = await scope.connection.request({
       '@type': 'getMessageLink',
       'chat_id': item.sourceId,
       'message_id': item.messageId,
       'media_timestamp': 0,
+      'checklist_task_id': 0,
+      'poll_option_id': '',
       'for_album': false,
       'in_message_thread': false,
     });

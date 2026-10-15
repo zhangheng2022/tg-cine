@@ -838,6 +838,12 @@ abstract class AppLocalizations {
   /// **'暂时无法取得源消息链接，请检查来源权限后重试。'**
   String get librarySourceLinkError;
 
+  /// No description provided for @librarySourceLinkUnsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'这条消息不支持源链接。你仍可在原聊天中查找。'**
+  String get librarySourceLinkUnsupported;
+
   /// No description provided for @libraryDetailsUnavailable.
   ///
   /// In zh, this message translates to:

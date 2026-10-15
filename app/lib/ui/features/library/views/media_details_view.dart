@@ -4,6 +4,7 @@ import 'package:forui/forui.dart';
 import 'package:material_ui/material_ui.dart' show SelectableText;
 
 import '../../../../domain/models/local_media.dart';
+import '../../../../domain/models/telegram_account.dart';
 import '../../../../l10n/l10n.dart';
 import '../view_models/library_view_model.dart';
 
@@ -57,19 +58,25 @@ class MediaDetails extends StatefulWidget {
 class _MediaDetailsState extends State<MediaDetails> {
   bool _copying = false;
   bool _copied = false;
-  bool _failed = false;
+  TelegramFailure? _failure;
   Future<void> _copy() async {
     setState(() {
       _copying = true;
-      _failed = false;
+      _failure = null;
     });
     try {
       final link = await widget.viewModel.messageLink(widget.media);
       if (!mounted) return;
       await Clipboard.setData(ClipboardData(text: link));
       if (mounted) setState(() => _copied = true);
-    } catch (_) {
-      if (mounted) setState(() => _failed = true);
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _failure = error is TelegramException
+              ? error.failure
+              : TelegramFailure.connection;
+        });
+      }
     } finally {
       if (mounted) setState(() => _copying = false);
     }
@@ -115,13 +122,15 @@ class _MediaDetailsState extends State<MediaDetails> {
               child: Text(l10n.libraryCopySource),
             ),
           ),
-          if (_copied || _failed)
+          if (_copied || _failure != null)
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Semantics(
                 liveRegion: true,
                 child: Text(
-                  _failed
+                  _failure == TelegramFailure.linkUnsupported
+                      ? l10n.librarySourceLinkUnsupported
+                      : _failure != null
                       ? l10n.librarySourceLinkError
                       : l10n.librarySourceCopied,
                 ),

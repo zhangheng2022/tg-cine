@@ -214,6 +214,18 @@ void main() {
               await tester.pumpAndSettle();
               expect(tester.takeException(), isNull);
               await capture('details');
+              library.linkSupported = false;
+              final copy = find.text('复制源消息链接');
+              await tester.ensureVisible(copy);
+              await tester.pumpAndSettle();
+              await tester.tap(copy);
+              await tester.pumpAndSettle();
+              final unsupported = find.text('这条消息不支持源链接。你仍可在原聊天中查找。');
+              await tester.ensureVisible(unsupported);
+              await tester.pumpAndSettle();
+              expect(unsupported, findsOneWidget);
+              expect(tester.takeException(), isNull);
+              await capture('link-unsupported');
               await tester.pumpWidget(
                 RepaintBoundary(
                   key: boundaryKey,

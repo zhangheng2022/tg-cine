@@ -31,4 +31,4 @@ FINISH: Flutter 组件矩阵、原生渲染截图、独立 Impeccable 审查与�
 
 `.impeccable/review/library/` 的 48 张 Windows 原生 Flutter 设计数据截图覆盖 Android/iOS 平台变体、手机/宽屏、明暗、1.0/2.0 字体和片库/详情/失败。独立 Impeccable 复核为 ship：320×568 两倍字体失败态的错误与重试已置于同一列表，详情返回为 48×48dp；所有截图有效，24 对平台变体哈希一致。这些不是移动截图，不能据此认定 Android/iOS 实际渲染相同。
 
-iOS 本机没有 Xcode，未完成构建、签名或真机验收；移动 TDLib 原生库尚未交付，真实移动 Telegram 导入未验收，远程 CI 未运行。本轮不恢复播放排查。
+2026-10-15 增量：Android 已交付 TDLib，真实应用重开自动恢复授权、已选来源和 25 条媒体。私聊消息不支持普通源链接，按 TDLib 能力明确提示，不伪造复制成功。全量 238 项 Flutter、2 项 Windows 集成测试通过，64 张新设计数据截图含 16 张能力提示；代表性画面人工检查通过，保持 ForUI、48dp 操作与 liveRegion。iOS 模板远程构建已通过，带 TDLib 的构建与运行尚在独立 CI 验证，真实账号及真机未验收。本轮不恢复播放排查。

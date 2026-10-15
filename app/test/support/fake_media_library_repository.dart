@@ -32,6 +32,7 @@ class FakeMediaLibraryRepository implements MediaLibraryRepository {
   bool complete;
   bool paused = false;
   bool fail = false;
+  bool linkSupported = true;
   int calls = 0;
   int revision = 0;
   Completer<void>? pending;
@@ -94,6 +95,9 @@ class FakeMediaLibraryRepository implements MediaLibraryRepository {
 
   @override
   Future<String> messageLink(LocalMedia media) async {
+    if (!linkSupported) {
+      throw const TelegramException(TelegramFailure.linkUnsupported);
+    }
     if (fail) throw const TelegramException(TelegramFailure.unavailable);
     return 'https://t.me/c/123456/${media.messageId}';
   }

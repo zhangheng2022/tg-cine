@@ -138,6 +138,7 @@
   "libraryCopySource": "复制源消息链接",
   "librarySourceCopied": "链接已复制，可在 Telegram 中查看",
   "librarySourceLinkError": "暂时无法取得源消息链接，请检查来源权限后重试。",
+  "librarySourceLinkUnsupported": "这条消息不支持源链接。你仍可在原聊天中查找。",
   "libraryDetailsUnavailable": "当前条目已不可用，请返回片库。",
   "libraryLoading": "正在读取本机片库…",
   "telegramDefaultConnection": "默认服务自动连接。Telegram 登录会话与片库保存在本机，无需填写服务地址或访问令牌。",

@@ -19,11 +19,17 @@ void main() {
   late List<Map<String, dynamic>> pages;
   Completer<Map<String, dynamic>>? pending;
   Completer<void>? requested;
+  Map<String, dynamic>? message;
+  Completer<Map<String, dynamic>>? pendingMessage;
+  var canGetLink = true;
   var account = 100;
   setUp(() async {
     account = 100;
     pending = null;
     requested = null;
+    message = null;
+    pendingMessage = null;
+    canGetLink = true;
     directory = await Directory.systemTemp.createTemp('tg-cine-import-test-');
     events = StreamController.broadcast();
     requests = [];
@@ -60,6 +66,15 @@ void main() {
             'getMessageLink' => {
               '@type': 'messageLink',
               'link': 'https://t.me/c/123456/10',
+            },
+            'getMessage' =>
+              await (pendingMessage?.future ??
+                  Future.value(
+                    message ?? historyVideo(request['message_id'] as int),
+                  )),
+            'getMessageProperties' => {
+              '@type': 'messageProperties',
+              'can_get_link': canGetLink,
             },
             _ => {'@type': 'ok'},
           };
@@ -169,6 +184,76 @@ void main() {
       repository.messageLink(item),
       throwsA(isA<TelegramException>()),
     );
+    expect(requests.where((r) => r['@type'] == 'getMessageLink'), isEmpty);
+  });
+  test('unsupported message links return a capability failure without requesting a link', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    canGetLink = false;
+    await expectLater(
+      repository.messageLink((await repository.media()).single),
+      throwsA(
+        isA<TelegramException>().having(
+          (e) => e.failure,
+          'failure',
+          TelegramFailure.linkUnsupported,
+        ),
+      ),
+    );
+    expect(requests.where((r) => r['@type'] == 'getMessageLink'), isEmpty);
+  });
+  test('source links reload the original message after reopening without downloading media', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    await repository.connect();
+    requests.clear();
+    final item = (await repository.media()).single;
+    expect(await repository.messageLink(item), startsWith('https://t.me/'));
+    final types = requests.map((r) => r['@type']).toList();
+    expect(
+      types.indexOf('getMessage'),
+      lessThan(types.indexOf('getMessageLink')),
+    );
+    expect(
+      requests.firstWhere((r) => r['@type'] == 'getMessage')['message_id'],
+      item.messageId,
+    );
+    expect(types, isNot(contains('downloadFile')));
+  });
+  test(
+    'deleted, foreign and replaced source messages cannot produce a link',
+    () async {
+      pages.add(page([historyVideo(10)], 0));
+      await repository.importNext(-1);
+      final item = (await repository.media()).single;
+      for (final response in [
+        {'@type': 'error'},
+        historyVideo(10, source: -2),
+        historyVideo(20),
+        historyVideo(10, unique: 'replacement'),
+      ]) {
+        message = response;
+        await expectLater(
+          repository.messageLink(item),
+          throwsA(isA<TelegramException>()),
+        );
+      }
+      expect(requests.where((r) => r['@type'] == 'getMessageLink'), isEmpty);
+    },
+  );
+  test('deselecting a source while loading its message rejects the late link request', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    final item = (await repository.media()).single;
+    pendingMessage = Completer();
+    final linking = repository.messageLink(item);
+    final rejected = expectLater(linking, throwsA(isA<TelegramException>()));
+    while (!requests.any((r) => r['@type'] == 'getMessage')) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    await repository.saveSources({});
+    pendingMessage!.complete(historyVideo(10));
+    await rejected;
     expect(requests.where((r) => r['@type'] == 'getMessageLink'), isEmpty);
   });
 }

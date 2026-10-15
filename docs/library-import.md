@@ -33,3 +33,5 @@ Android NE2210 真机与 Windows 的协议替身 → 真实加密 SQLite → Flu
 iOS 没有本机 Xcode，未编译、签名或真机验证；Android TDLib 已交付且真实登录通过，iOS 原生仍待交付；真实移动 Telegram 导入尚未验收，后续记录见 [阶段验收](library-acceptance.md)。Web 保留未连接状态。远程 CI 未运行，本轮未提交代码或部署 Worker。
 
 当前 Code Review 能力只提供 PR CI 诊断，本轮以源码、调用链及差异人工审查。图谱尚未更新，旧图谱节点不作为本轮实现证据。
+
+2026-10-15 更新：源消息链接先按需载入原消息、校验实际媒体版本，再检查 messageProperties.can_get_link。私聊等不支持普通链接的消息显示明确说明；不拼接链接、不下载媒体。Android 正常应用的来源及 25 条媒体重开恢复已核实，完整本轮关卡见 [阶段验收](library-acceptance.md)。
