@@ -8,7 +8,7 @@
 - 新 Windows Debug 正常入口已用新目标协议构建并运行。默认服务和中转就绪、手机号页面无错误；当前桌面账号未授权，不计为登录恢复通过。
 - Windows 加密片库用只读连接核实仍有 25 条实际媒体版本和 1 个已选来源；没有重新导入、下载视频或删除会话。
 - Android 正常应用已完成真实来源保存、两轮导入/暂停、搜索、源链接复制及重开恢复；现保留 2 个来源、33 条媒体，新增来源的暂停状态和检查点保留，详见下文真实关卡。
-- iOS 共享 Dart 逻辑已有回归；XCFramework、带库构建和模拟器运行必须通过 macOS CI，真实账号及真机仍须独立验收。
+- iOS XCFramework 源码构建、实际最低版本、模拟器原生/隔离流程及带库无签名设备构建通过 macOS CI；真实账号及真机仍须独立验收。
 
 ## 关卡
 
@@ -31,7 +31,9 @@
 
 - 基线 `6145a32`：[CI 38675437099](https://github.com/zhangheng2022/tg-cine/actions/runs/38675437099) 全部通过，包含 Flutter、Worker、Windows、Linux、macOS 与无签名 iOS 模板构建。
 - 原生交付增量 `3a0218c`：[CI 38675776110](https://github.com/zhangheng2022/tg-cine/actions/runs/38675776110) 全部通过。
-- [移动 TDLib 38675787274](https://github.com/zhangheng2022/tg-cine/actions/runs/38675787274) 已启动 Android/iOS 同提交构建。工作流验证并安装产物，检查 Android APK 包含两 ABI，执行 iOS 模拟器 ABI、隔离存储/导入/默认凭据集成测试及带框架的无签名设备构建；尚在运行，不计通过。流程不上传项目凭据或访问真实 Telegram 账号。
+- [移动 TDLib 38675787274](https://github.com/zhangheng2022/tg-cine/actions/runs/38675787274) 的 Android 两 ABI 源码构建、安装校验与带库 APK 通过；iOS 实际最低版本不符，主动停止该运行及复用旧产物的运行，不计 iOS 通过。流程不上传项目凭据或访问真实 Telegram 账号。
+
+源链接修复 `f078dde` 的 [CI 38677099559](https://github.com/zhangheng2022/tg-cine/actions/runs/38677099559) 全部通过。移动原生工作流增加可选 `artifact_run_id`：只从本仓库下载对应平台产物，再校验固定 TDLib 来源及每文件摘要，使最新 Flutter 代码可以复用同一原生库验收。默认仍从固定源码构建；不注入真实 Telegram 应用凭据。
 
 本次本地差异按源码、调用方、失败边界及测试人工审查；Code Review 工具仅支持 PR CI，未发布 PR 评论或创建 PR。Git HTTPS 推送失败后，使用 GitHub Git 数据 API 校验完整 tree 与 commit SHA 一致并只允许快进更新，未改写提交。
 
@@ -45,6 +47,10 @@
 
 ## iOS 部署目标关卡
 
-首轮源码构建的 XCFramework 摘要正确，但 Mach-O 的实际 `LC_BUILD_VERSION.minos=26.5`，与框架声明的 iOS 15.0 不符。该产物不可用于宣称 iOS 15 兼容，即使最新模拟器测试通过。已在固定源码构建选项明确传入 `IOS_DEPLOYMENT_TARGET=15.0`，安装器逐个校验设备及模拟器架构、平台与实际最低版本，旧产物已被拒绝，正在重新编译；不修改二进制版本标记来规避检查。
+首轮源码构建的 XCFramework 摘要正确，但 Mach-O 的实际 `LC_BUILD_VERSION.minos=26.5`，与框架声明的 iOS 15.0 不符。该产物不可用于宣称 iOS 15 兼容。已在固定源码构建选项明确传入 `IOS_DEPLOYMENT_TARGET=15.0`，安装器逐个校验设备及模拟器架构、平台与实际最低版本，旧产物已被拒绝；不修改二进制版本标记来规避检查。
 
-源链接修复 078dde 的 [CI 38677099559](https://github.com/zhangheng2022/tg-cine/actions/runs/38677099559) 全部通过。移动原生工作流增加可选 artifact_run_id：只从本仓库下载对应平台产物，再校验固定 TDLib 来源及每文件摘要，使最新 Flutter 代码可以复用同一原生库验收。默认仍从固定源码构建；不注入真实 Telegram 应用凭据。
+[修正后的源码构建 38680317329](https://github.com/zhangheng2022/tg-cine/actions/runs/38680317329) 在 `7f90216` 全部通过：Android 两 ABI 原生库、带库 APK；iOS 原生 ABI、加密存储重开、协议替身片库导入和公共凭据生命周期；带框架的无签名 iOS 设备构建及嵌入文件检查。截图用例未配置输出目录而跳过，不计为 iOS 实机视觉验收。CI 不读取真实账号或项目 API 凭据。
+
+下载后的框架由安装器及 LLVM 独立核验：设备 arm64、模拟器 arm64/x86_64 三个架构的平台正确、实际 `minos=15.0`、四个现代 JSON C 导出完整。五个产物文件摘要通过，已安装到本机忽略目录；二进制不提交仓库。最低构建版本校验不替代 iOS 15 系统实测。
+
+`bfe4d2b` 的 [常规 CI 38684936164](https://github.com/zhangheng2022/tg-cine/actions/runs/38684936164) 全部通过，包括新增的产物安装回归、Flutter 238 项、Worker 64 项和各平台基础构建。本地 WSL 的 Python 5 项全部通过，Windows 通过 4 项、跳过 Linux/macOS 源码执行项。新增安装回归验证：摘要正确但最低版本错误的框架仍会在任何文件写入 App 前被拒绝。

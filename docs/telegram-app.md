@@ -26,7 +26,7 @@ Windows 启动脚本默认连接公共服务，自动取得独立凭据，不读
 
 ## iOS 与 Android 同步打包
 
-两端固定使用 TDLib 提交 `c15d3f5a5de6e3ba5839822c451152e5e18bb700`。`.github/workflows/tdlib-mobile.yml` 提供两个平台的手动构建矩阵，尚未触发；`build_mobile_tdlib.sh` 使用该提交的官方 Android/iOS 构建脚本。Android 生成 arm64-v8a、x86_64 JSON 库；iOS 生成设备与模拟器框架，再组成 XCFramework。框架构建必须在 macOS/Xcode 上进行。
+两端固定使用 TDLib 提交 `c15d3f5a5de6e3ba5839822c451152e5e18bb700`。`.github/workflows/tdlib-mobile.yml` 的双端源码构建与带库验收已通过，见 [阶段验收](library-acceptance.md)；`build_mobile_tdlib.sh` 使用该提交的官方 Android/iOS 构建脚本。Android 生成 arm64-v8a、x86_64 JSON 库；iOS 生成设备与模拟器框架，再组成 XCFramework。框架构建必须在 macOS/Xcode 上进行，本轮由云端完成。
 
 构建包包含来源提交和文件 SHA-256 清单。安装前检查：
 
@@ -35,7 +35,7 @@ python tool/install_mobile_tdlib.py <构建包目录> --check
 python tool/install_mobile_tdlib.py <构建包目录>
 ```
 
-Android 放入已忽略的 `android/app/src/main/jniLibs/`；iOS 放入已忽略的 `ios/TDLib/Frameworks/tdjson.xcframework`，由本地 CocoaPod 嵌入。携带项目 API 标识的 Debug/Profile/Release 构建均检查必需原生库，缺失直接失败；没有库的 UI 模板构建不计为 Telegram 接入通过。Android 两个 ABI 已在本机完成来源构建、打包及真机预登录验收，iOS 仍须 macOS/Xcode，详见 [移动原生记录](mobile-native.md)。
+Android 放入已忽略的 `android/app/src/main/jniLibs/`；iOS 放入已忽略的 `ios/TDLib/Frameworks/tdjson.xcframework`，由本地 CocoaPod 嵌入。携带项目 API 标识的 Debug/Profile/Release 构建均检查必需原生库，缺失直接失败；没有库的 UI 模板构建不计为 Telegram 接入通过。Android 已完成真实授权和片库验收；iOS 模拟器原生库、隔离存储/导入通过，带框架无签名设备包构建成功，真实 iPhone 仍需签名安装环境。详见 [移动原生记录](mobile-native.md)。
 
 在 `app/` 准备本机 Debug 配置：
 
@@ -46,7 +46,9 @@ flutter run --debug -d <设备ID> --dart-define-from-file=../.cache/deployment/f
 
 该配置包含开发凭据，只用于本机 Debug，不可分发。Android/iOS 的公开构建入口拒绝非空开发配置。默认服务现已支持自动配置、独立设备凭据、刷新/撤销与持久额度；公开构建只注入项目 Telegram 应用标识并打包 TDLib，不携带共享开发令牌。Windows Debug 可额外指定 `TG_CINE_USE_DEFAULT_SERVICE=true`，保留本机会话路径并改用公共凭据；构建和验收边界见 [默认服务](public-service.md)。
 
-## 验证边界
+## 验证边界（历史记录）
+
+以下是此前轮次的结果；当前 238 项 Flutter、双端原生 CI 及真实 Android 片库结果以 [阶段验收](library-acceptance.md) 为准，不将模拟器协议替身计为真实 iOS 授权。
 
 - Flutter 146 项单元/组件测试通过，覆盖 Android/iOS 平台变体、手机/中屏/宽屏、明暗、两倍字体、登录步骤、来源选择、重启恢复与失败重试。
 - Windows Data 真实会话两次重开、`getMe` 和主列表/归档读取通过；Windows Flutter 内真实会话恢复与来源列表显示也通过；未打印账号、来源名称或消息标识，未读取媒体。
