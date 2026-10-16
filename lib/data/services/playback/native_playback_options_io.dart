@@ -1,10 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 
 Future<void> configureNativePlayback(Player player) async {
   final native = player.platform;
   if (native is NativePlayer) {
+    if (Platform.isAndroid &&
+        await const MethodChannel('com.alexmercerind/media_kit_video')
+                .invokeMethod<bool>('Utils.IsEmulator') ==
+            true) {
+      // shortcut: avoid zero EGL flags on emulators until bundled libmpv is fixed.
+      await native.setProperty('gpu-debug', 'yes');
+    }
     // MP4 audio/video small seeks need a byte buffer, separate from the demuxer packet cache.
     await native.setProperty('stream-buffer-size', '${32 * 1024 * 1024}');
     // Disk caching limits packet metadata rather than media bytes.
