@@ -9,6 +9,7 @@ class SourcesViewModel extends ChangeNotifier {
   SourcesViewModel(this._repository) : _account = _repository.account {
     _subscription = _repository.accounts.listen(_changed);
     _selected = Set.of(_account.selectedSources);
+    _selectionAccountId = _account.id;
   }
 
   final TelegramRepository _repository;
@@ -18,6 +19,8 @@ class SourcesViewModel extends ChangeNotifier {
   Set<int> _selected = {};
   String _query = '';
   bool _disposed = false;
+  int? _selectionAccountId;
+  int _loadRevision = 0;
   bool busy = false;
   bool loadingSources = false;
   bool hasMore = true;
@@ -41,14 +44,26 @@ class SourcesViewModel extends ChangeNotifier {
     if (_disposed) return;
     final previous = _account;
     _account = value;
-    if (value.failure != null) failure = value.failure;
-    if (previous.stage != TelegramStage.ready || previous.id != value.id) {
+    failure = value.failure;
+    if (value.stage != previous.stage || previous.id != value.id) {
+      ++_loadRevision;
+      loadingSources = false;
       _sources = [];
-      _query = '';
-      _selected = Set.of(value.selectedSources);
       hasMore = true;
       saved = false;
-      if (value.stage == TelegramStage.ready) unawaited(loadSources());
+      if (value.stage == TelegramStage.ready) {
+        if (_selectionAccountId != value.id) {
+          _query = '';
+          _selected = Set.of(value.selectedSources);
+        }
+        _selectionAccountId = value.id;
+        unawaited(loadSources());
+      } else if (value.stage != TelegramStage.connecting &&
+          value.stage != TelegramStage.failed) {
+        _selectionAccountId = null;
+        _selected = {};
+        _query = '';
+      }
     }
     _notify();
   }
@@ -80,20 +95,26 @@ class SourcesViewModel extends ChangeNotifier {
     }
     loadingSources = true;
     failure = null;
+    final revision = ++_loadRevision;
     final id = _account.id;
     _notify();
     try {
       final page = await _repository.loadSources();
       if (!_disposed &&
+          revision == _loadRevision &&
           _account.id == id &&
           _account.stage == TelegramStage.ready) {
         _sources = page.sources;
         hasMore = page.hasMore;
       }
-    } catch (_) {
-      if (!_disposed && _account.id == id) failure = TelegramFailure.connection;
+    } catch (error) {
+      if (!_disposed && revision == _loadRevision && _account.id == id) {
+        failure = error is TelegramException
+            ? error.failure
+            : TelegramFailure.connection;
+      }
     } finally {
-      loadingSources = false;
+      if (revision == _loadRevision) loadingSources = false;
       _notify();
     }
   }
@@ -116,8 +137,14 @@ class SourcesViewModel extends ChangeNotifier {
   }
 
   Future<void> save() => _run(() async {
+    final id = _account.id;
+    if (_account.stage != TelegramStage.ready) return;
     await _repository.saveSources(Set.of(_selected));
-    if (!_disposed) saved = true;
+    if (!_disposed &&
+        _account.id == id &&
+        _account.stage == TelegramStage.ready) {
+      saved = true;
+    }
   });
 
   Future<void> close() async {

@@ -292,7 +292,7 @@ class _SourcePickerState extends State<_SourcePicker> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (vm.sources.isEmpty && !vm.loadingSources)
-                        Text(l10n.telegramNoSources),
+                        if (vm.failure == null) Text(l10n.telegramNoSources),
                       if (vm.hasMore || vm.failure != null) ...[
                         const SizedBox(height: 12),
                         FButton(
@@ -303,6 +303,8 @@ class _SourcePickerState extends State<_SourcePicker> {
                           child: Text(
                             vm.loadingSources
                                 ? l10n.telegramLoadingSources
+                                : vm.failure != null
+                                ? l10n.retry
                                 : l10n.telegramLoadMore,
                           ),
                         ),
