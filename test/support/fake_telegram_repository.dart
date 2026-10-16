@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:tg_cine/domain/models/local_media.dart';
+import 'package:tg_cine/domain/ports/media_playback_repository.dart';
+
 import 'package:tg_cine/domain/models/telegram_account.dart';
 import 'package:tg_cine/domain/ports/telegram_repository.dart';
 
@@ -101,4 +104,13 @@ class FakeTelegramRepository implements TelegramRepository {
     closed = true;
     await _events.close();
   }
+}
+
+/// Offers the playback action for layout tests without starting a native decoder.
+class PlaybackLayoutTelegramRepository extends FakeTelegramRepository
+    implements MediaPlaybackRepository {
+  PlaybackLayoutTelegramRepository({super.restored, super.persisted});
+  @override
+  Future<PlaybackMedia> openPlayback(LocalMedia media) async =>
+      throw StateError('Layout fixture only');
 }

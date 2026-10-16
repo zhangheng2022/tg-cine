@@ -24,10 +24,14 @@ class TelegramHistoryService {
     }
     final next = response['next_from_message_id'] as int;
     final messages = response['messages'] as List;
-    if (next < 0 || (next != 0 && next == cursor) || messages.length > 50) {
+    if (next < 0 ||
+        (next != 0 && cursor != 0 && next >= cursor) ||
+        messages.length > 50) {
       throw const FormatException('Non-progressing history page');
     }
     final media = <LocalMedia>[];
+    var newest = 0;
+    var oldest = 0;
     for (final raw in messages) {
       if (raw is! Map ||
           raw['chat_id'] != sourceId ||
@@ -37,6 +41,9 @@ class TelegramHistoryService {
         throw const FormatException('Invalid source message');
       }
       final content = raw['content'] as Map;
+      final id = raw['id'] as int;
+      if (newest < id) newest = id;
+      if (oldest == 0 || oldest > id) oldest = id;
       if (content['is_secret'] == true || raw['self_destruct_type'] != null) {
         continue;
       }
@@ -79,6 +86,11 @@ class TelegramHistoryService {
         ),
       );
     }
-    return TelegramMediaPage(media: media, nextMessageId: next);
+    return TelegramMediaPage(
+      media: media,
+      nextMessageId: next,
+      newestMessageId: newest,
+      oldestMessageId: oldest,
+    );
   }
 }

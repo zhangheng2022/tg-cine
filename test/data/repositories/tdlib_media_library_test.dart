@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -72,6 +73,19 @@ void main() {
                   Future.value(
                     message ?? historyVideo(request['message_id'] as int),
                   )),
+            'getFileDownloadedPrefixSize' => {
+              'size': requests.any((r) => r['@type'] == 'downloadFile')
+                  ? 1024
+                  : 0,
+            },
+            'readFilePart' => {
+              'data': base64Encode(
+                List.generate(
+                  request['count'] as int,
+                  (i) => ((request['offset'] as int) + i) % 256,
+                ),
+              ),
+            },
             'getMessageProperties' => {
               '@type': 'messageProperties',
               'can_get_link': canGetLink,
@@ -99,6 +113,196 @@ void main() {
     'messages': messages,
     'next_from_message_id': next,
   };
+
+  test(
+    'an empty first update page still establishes the later high-water mark',
+    () async {
+      pages.add(page([historyVideo(20)], 0));
+      await repository.importNext(-1);
+      pages.add(page([], 50));
+      expect(await repository.updateNext(-1), isFalse);
+      pages.add(page([historyVideo(40)], 30));
+      expect(await repository.updateNext(-1), isFalse);
+      pages.add(page([historyVideo(20)], 0));
+      expect(await repository.updateNext(-1), isTrue);
+      expect((await store.updateCheckpoint(100, -1)).highWater, 40);
+    },
+  );
+
+  test('new-message updates resume from their own cursor and never advance history', () async {
+    pages.add(page([historyVideo(20), historyVideo(10)], 9));
+    await repository.importNext(-1);
+    final original = (await store.loadMedia(100)).first;
+    await store.saveProgress(
+      100,
+      original.versionKey,
+      const Duration(seconds: 4),
+    );
+    pages.add(page([historyVideo(50), historyVideo(40)], 39));
+    expect(await repository.updateNext(-1), isFalse);
+    expect((await store.checkpoint(100, -1)).nextMessageId, 9);
+    expect((await store.updateCheckpoint(100, -1)).cursor, 39);
+    await repository.pauseImport(-1, true);
+    await expectLater(
+      repository.updateNext(-1),
+      throwsA(isA<TelegramException>()),
+    );
+    await repository.pauseImport(-1, false);
+    pages.add(page([historyVideo(30), historyVideo(20)], 19));
+    expect(await repository.updateNext(-1), isTrue);
+    expect(
+      requests
+          .where((r) => r['@type'] == 'searchChatMessages')
+          .last['from_message_id'],
+      39,
+    );
+    expect((await store.updateCheckpoint(100, -1)).highWater, 50);
+    expect((await store.checkpoint(100, -1)).nextMessageId, 9);
+    expect(await store.loadMedia(100), hasLength(5));
+    expect(
+      await store.loadProgress(100, original.versionKey),
+      const Duration(seconds: 4),
+    );
+    pages.add(page([historyVideo(50), historyVideo(40)], 39));
+    expect(await repository.updateNext(-1), isTrue);
+    expect(await store.loadMedia(100), hasLength(5));
+    pages.add(page([historyVideo(8)], 0));
+    await repository.importNext(-1);
+    expect(await store.loadMedia(100), hasLength(6));
+    expect((await store.updateCheckpoint(100, -1)).highWater, 50);
+  });
+
+  test('failed update and deselection do not commit fetched pages', () async {
+    pages.add(page([historyVideo(20)], 0));
+    await repository.importNext(-1);
+    pages.add({'@type': 'error'});
+    await expectLater(
+      repository.updateNext(-1),
+      throwsA(isA<TelegramException>()),
+    );
+    expect((await store.updateCheckpoint(100, -1)).highWater, 20);
+    requested = Completer<void>();
+    pending = Completer<Map<String, dynamic>>();
+    final operation = repository.updateNext(-1);
+    await requested!.future;
+    await repository.saveSources({});
+    pending!.complete(page([historyVideo(30)], 0));
+    await expectLater(operation, throwsA(isA<TelegramException>()));
+    expect((await store.updateCheckpoint(100, -1)).highWater, 20);
+  });
+
+  test('playback serves exact ranges and restores progress scoped to the file version', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    final item = (await repository.media()).single;
+    await store.saveProgress(100, item.versionKey, const Duration(seconds: 4));
+    final source = await repository.openPlayback(item);
+    expect(source.position, const Duration(seconds: 4));
+    final client = HttpClient();
+    addTearDown(() => client.close(force: true));
+    final request = await client.getUrl(source.uri);
+    request.headers.set(HttpHeaders.rangeHeader, 'bytes=5-16');
+    final response = await request.close();
+    expect(response.statusCode, 206);
+    expect(
+      response.headers.value(HttpHeaders.contentRangeHeader),
+      'bytes 5-16/1024',
+    );
+    final bytes = await response.fold<List<int>>(
+      [],
+      (all, part) => all..addAll(part),
+    );
+    expect(bytes, List.generate(12, (i) => i + 5));
+    await source.savePosition(const Duration(seconds: 7));
+    expect(
+      await store.loadProgress(100, item.versionKey),
+      const Duration(seconds: 7),
+    );
+    final uri = source.uri;
+    await repository.saveSources({});
+    await source.closed;
+    await source.close();
+    expect(requests.any((r) => r['@type'] == 'cancelDownloadFile'), isTrue);
+    await expectLater(source.savePosition(Duration.zero), throwsStateError);
+    await expectLater(
+      client.getUrl(uri).then((request) => request.close()),
+      throwsA(isA<IOException>()),
+    );
+  });
+
+  test('replacement and logout close previous media without sharing account progress', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    final item = (await repository.media()).single;
+    final first = await repository.openPlayback(item);
+    final second = await repository.openPlayback(item);
+    await first.closed;
+    await expectLater(first.savePosition(Duration.zero), throwsStateError);
+    await repository.logout();
+    await second.closed;
+    account = 200;
+    await repository.connect();
+    expect(await store.loadProgress(200, item.versionKey), isNull);
+    await expectLater(
+      repository.openPlayback(item),
+      throwsA(isA<TelegramException>()),
+    );
+  });
+
+  test('playback refuses changed, ephemeral and deselected messages', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    final item = (await repository.media()).single;
+    message = historyVideo(10, unique: 'replaced');
+    await expectLater(
+      repository.openPlayback(item),
+      throwsA(isA<TelegramException>()),
+    );
+    message = historyVideo(
+      10,
+    )..['self_destruct_type'] = {'@type': 'messageSelfDestructTypeImmediately'};
+    await expectLater(
+      repository.openPlayback(item),
+      throwsA(isA<TelegramException>()),
+    );
+    message = null;
+    await repository.saveSources({});
+    await expectLater(
+      repository.openPlayback(item),
+      throwsA(isA<TelegramException>()),
+    );
+    expect(requests.any((r) => r['@type'] == 'downloadFile'), isFalse);
+  });
+
+  test('a pending open cannot survive account replacement', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    final item = (await repository.media()).single;
+    pendingMessage = Completer();
+    final opening = repository.openPlayback(item);
+    final rejected = expectLater(opening, throwsA(isA<TelegramException>()));
+    await Future<void>.delayed(Duration.zero);
+    account = 200;
+    await repository.connect();
+    pendingMessage!.complete(historyVideo(10));
+    await rejected;
+    expect(requests.any((r) => r['@type'] == 'downloadFile'), isFalse);
+  });
+
+  test('concurrent opens admit only the most recent selection', () async {
+    pages.add(page([historyVideo(10)], 0));
+    await repository.importNext(-1);
+    final item = (await repository.media()).single;
+    pendingMessage = Completer();
+    final first = repository.openPlayback(item);
+    final rejected = expectLater(first, throwsA(isA<TelegramException>()));
+    await Future<void>.delayed(Duration.zero);
+    final second = repository.openPlayback(item);
+    await Future<void>.delayed(Duration.zero);
+    pendingMessage!.complete(historyVideo(10));
+    await rejected;
+    await (await second).close();
+  });
 
   test('native repository imports short pages transactionally, deduplicates and restores encrypted checkpoint', () async {
     pages.addAll([

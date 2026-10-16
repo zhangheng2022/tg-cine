@@ -1,8 +1,15 @@
+import '../../domain/models/media_organization.dart';
+import '../../domain/models/watch_record.dart';
+
 import 'dart:async';
 
 import '../../domain/models/telegram_account.dart';
 import '../../domain/ports/telegram_repository.dart';
+import '../../domain/ports/media_playback_repository.dart';
+import '../services/playback/telegram_playback_source.dart';
+import '../services/playback/playback_trace.dart';
 import '../../domain/ports/media_library_repository.dart';
+import '../../domain/models/media_work.dart';
 import '../../domain/ports/local_media_repository.dart';
 import '../../domain/models/local_media.dart';
 import '../services/telegram/telegram_history_service.dart';
@@ -44,11 +51,15 @@ typedef _LibraryScope = ({
 });
 
 class TdlibTelegramRepository
-    implements TelegramRepository, MediaLibraryRepository {
+    implements
+        TelegramRepository,
+        MediaLibraryRepository,
+        MediaPlaybackRepository {
   TdlibTelegramRepository(
     this._open, {
     this.defaultService = false,
     this.resetDefaultAccess,
+    this.playbackTrace,
   }) {
     _account = TelegramAccount(
       stage: TelegramStage.disconnected,
@@ -58,6 +69,7 @@ class TdlibTelegramRepository
 
   final Future<TelegramConnection> Function() _open;
   final bool defaultService;
+  final PlaybackTrace? playbackTrace;
   final Future<void> Function()? resetDefaultAccess;
   final _accounts = StreamController<TelegramAccount>.broadcast(sync: true);
   TelegramAccount _account = TelegramAccount(stage: TelegramStage.disconnected);
@@ -68,6 +80,9 @@ class TdlibTelegramRepository
   final _exhausted = <String>{};
   int _limit = 0;
   int _generation = 0;
+  PlaybackMedia? _playback;
+  int? _playingSource;
+  int _playbackGeneration = 0;
   bool _closed = false;
   bool _connecting = false;
   Future<void>? _opening;
@@ -79,6 +94,12 @@ class TdlibTelegramRepository
 
   void _publish(TelegramAccount value) {
     if (_closed) return;
+    if (value.stage != TelegramStage.ready ||
+        value.id != _account.id ||
+        (_playingSource != null &&
+            !value.selectedSources.contains(_playingSource))) {
+      unawaited(_closePlayback().catchError((Object _) {}));
+    }
     _account = TelegramAccount(
       stage: value.stage,
       id: value.id,
@@ -409,14 +430,62 @@ class TdlibTelegramRepository
     int offset = 0,
     int limit = 50,
     String query = '',
+    MediaKind? kind,
   }) => _library(
     (scope) => scope.store.loadMedia(
       scope.accountId,
       offset: offset,
       limit: limit,
       query: query,
+      kind: kind,
     ),
   );
+
+  @override
+  Future<void> saveOrganization(LocalMedia media, MediaOrganization? value) =>
+      _library((scope) async {
+        _checkLibrary(scope, media.sourceId);
+        await scope.store.saveOrganization(
+          scope.accountId,
+          media.versionKey,
+          value,
+        );
+      });
+
+  @override
+  Future<List<MediaWork>> works({
+    String query = '',
+    int offset = 0,
+    int limit = 50,
+  }) => _library(
+    (s) => s.store.loadWorks(
+      s.accountId,
+      query: query,
+      offset: offset,
+      limit: limit,
+    ),
+  );
+  @override
+  Future<List<LocalMedia>> workFiles(
+    int workId, {
+    int offset = 0,
+    int limit = 50,
+    String? nextAfter,
+  }) => _library(
+    (s) => s.store.loadWorkFiles(
+      s.accountId,
+      workId,
+      offset: offset,
+      limit: limit,
+      nextAfter: nextAfter,
+    ),
+  );
+  @override
+  Future<void> assignWork(MediaWork work, List<WorkFileEdit> files) =>
+      _library((s) => s.store.assignWork(s.accountId, work, files));
+  @override
+  Future<void> unassignWork(List<String> versionKeys) =>
+      _library((s) => s.store.unassignWork(s.accountId, versionKeys));
 
   @override
   Future<List<SourceImport>> imports() => _library((scope) async {
@@ -438,6 +507,30 @@ class TdlibTelegramRepository
     }
     return scope.store.loadImports(scope.accountId);
   });
+
+  @override
+  Future<List<WatchRecord>> history({
+    int offset = 0,
+    int limit = 50,
+    bool unfinished = false,
+    int? workId,
+    List<String>? versionKeys,
+  }) => _library(
+    (scope) => scope.store.loadHistory(
+      scope.accountId,
+      offset: offset,
+      limit: limit,
+      unfinished: unfinished,
+      workId: workId,
+      versionKeys: versionKeys,
+    ),
+  );
+
+  @override
+  Future<void> removeHistory({String? versionKey}) => _library(
+    (scope) =>
+        scope.store.removeHistory(scope.accountId, versionKey: versionKey),
+  );
 
   Future<void> _ensureSource(_LibraryScope scope, int sourceId) async {
     _checkLibrary(scope, sourceId);
@@ -470,7 +563,47 @@ class TdlibTelegramRepository
       nextMessageId: page.nextMessageId,
       expectedRevision: current.revision,
       complete: page.nextMessageId == 0,
+      newestMessageId: page.newestMessageId,
     );
+  });
+
+  @override
+  Future<bool> updateNext(int sourceId) => _library((scope) async {
+    await _ensureSource(scope, sourceId);
+    final current = await scope.store.checkpoint(scope.accountId, sourceId);
+    if (current.paused) {
+      throw const TelegramException(TelegramFailure.invalidInput);
+    }
+    final update = await scope.store.updateCheckpoint(
+      scope.accountId,
+      sourceId,
+    );
+    final page = await TelegramHistoryService(scope.connection.request)
+        .page(sourceId, update.cursor);
+    _checkLibrary(scope, sourceId);
+    final target = page.newestMessageId > update.target
+        ? page.newestMessageId
+        : update.target;
+    final complete =
+        page.nextMessageId == 0 ||
+        (page.oldestMessageId > 0 &&
+            page.oldestMessageId <= update.highWater) ||
+        (page.nextMessageId > 0 && page.nextMessageId <= update.highWater);
+    await scope.store.writeUpdateBatch(
+      scope.accountId,
+      sourceId,
+      page.media.where((item) => item.messageId > update.highWater).toList(),
+      expectedRevision: current.revision,
+      checkpoint: UpdateCheckpoint(
+        highWater: complete && target > update.highWater
+            ? target
+            : update.highWater,
+        cursor: complete ? 0 : page.nextMessageId,
+        target: complete ? 0 : target,
+        checkedAt: complete ? DateTime.now().toUtc() : update.checkedAt,
+      ),
+    );
+    return complete;
   });
 
   @override
@@ -487,8 +620,10 @@ class TdlibTelegramRepository
         );
       });
 
-  @override
-  Future<String> messageLink(LocalMedia item) => _library((scope) async {
+  Future<Map<String, dynamic>> _mediaMessage(
+    _LibraryScope scope,
+    LocalMedia item,
+  ) async {
     _checkLibrary(scope, item.sourceId);
     final versions = await scope.store.loadVersions(
       scope.accountId,
@@ -518,6 +653,12 @@ class TdlibTelegramRepository
         file['size'] != item.sizeBytes) {
       throw const TelegramException(TelegramFailure.unavailable);
     }
+    return message;
+  }
+
+  @override
+  Future<String> messageLink(LocalMedia item) => _library((scope) async {
+    await _mediaMessage(scope, item);
     final properties = await scope.connection.request({
       '@type': 'getMessageProperties',
       'chat_id': item.sourceId,
@@ -552,9 +693,76 @@ class TdlibTelegramRepository
     return link as String;
   });
 
+  Future<void> _closePlayback() async {
+    ++_playbackGeneration;
+    final source = _playback;
+    _playback = null;
+    _playingSource = null;
+    await source?.close();
+  }
+
+  @override
+  Future<PlaybackMedia> openPlayback(LocalMedia item) =>
+      _library((scope) async {
+        final closing = _closePlayback();
+        final generation = _playbackGeneration;
+        await closing;
+        void check() {
+          _checkLibrary(scope, item.sourceId);
+          if (generation != _playbackGeneration) {
+            throw const TelegramException(TelegramFailure.unavailable);
+          }
+        }
+
+        final message = await _mediaMessage(scope, item);
+        final position = await scope.store.loadProgress(
+          scope.accountId,
+          item.versionKey,
+        );
+        check();
+        final source = await TelegramPlaybackSource.start(
+          message: message,
+          trace: playbackTrace,
+          request: (request) async {
+            // Cleanup still targets the captured connection after access is revoked.
+            if (request['@type'] == 'cancelDownloadFile') {
+              return scope.connection.request(request);
+            }
+            check();
+            final result = await scope.connection.request(request);
+            check();
+            return result;
+          },
+          checkAccess: check,
+          position: position ?? Duration.zero,
+          savePosition:
+              (position, {completed = false, duration = Duration.zero}) async {
+                check();
+                await scope.store.saveProgress(
+                  scope.accountId,
+                  item.versionKey,
+                  position,
+                  completed: completed,
+                  duration: duration,
+                );
+                check();
+              },
+        );
+        try {
+          check();
+          _playback = source;
+          _playingSource = item.sourceId;
+          return source;
+        } catch (_) {
+          await source.close();
+          rethrow;
+        }
+      });
+
   @override
   Future<void> logout() async {
     if (_connection == null) return;
+    await _closePlayback();
     try {
       if (_account.stage == TelegramStage.ready) {
         await _connection!.request({'@type': 'logOut'});
@@ -569,6 +777,7 @@ class TdlibTelegramRepository
   }
 
   Future<void> _disconnect() async {
+    await _closePlayback();
     await _subscription?.cancel();
     _subscription = null;
     final connection = _connection;

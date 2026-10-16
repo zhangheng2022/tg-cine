@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'media_organization.dart';
+
 /// An actual Telegram file version; filenames are display metadata, never identity.
 class LocalMedia {
   const LocalMedia({
@@ -11,6 +13,7 @@ class LocalMedia {
     this.durationSeconds = 0,
     this.caption = '',
     this.sentAt = 0,
+    this._organization,
   });
 
   final int sourceId;
@@ -21,6 +24,9 @@ class LocalMedia {
   final int durationSeconds;
   final String caption;
   final int sentAt;
+  final MediaOrganization? _organization;
+  MediaOrganization get organization =>
+      _organization ?? MediaOrganization.parse(fileName);
 
   String get versionKey =>
       jsonEncode([sourceId, messageId, remoteUniqueId, sizeBytes]);
@@ -46,20 +52,40 @@ class SourceImport {
     required this.title,
     required this.imported,
     required this.checkpoint,
+    this.update = const UpdateCheckpoint(),
   });
   final int sourceId;
   final String title;
   final int imported;
   final ImportCheckpoint checkpoint;
+  final UpdateCheckpoint update;
+}
+
+class UpdateCheckpoint {
+  const UpdateCheckpoint({
+    this.highWater = 0,
+    this.cursor = 0,
+    this.target = 0,
+    this.checkedAt,
+  });
+  final int highWater;
+  final int cursor;
+  final int target;
+  final DateTime? checkedAt;
+  bool get pending => cursor != 0;
 }
 
 class TelegramMediaPage {
   TelegramMediaPage({
     required List<LocalMedia> media,
     required this.nextMessageId,
+    this.newestMessageId = 0,
+    this.oldestMessageId = 0,
   }) : media = List.unmodifiable(media);
   final List<LocalMedia> media;
   final int nextMessageId;
+  final int newestMessageId;
+  final int oldestMessageId;
 }
 
 class LocalMediaException implements Exception {

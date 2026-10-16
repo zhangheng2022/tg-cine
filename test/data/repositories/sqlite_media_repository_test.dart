@@ -1,3 +1,5 @@
+import 'package:tg_cine/domain/models/media_organization.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -59,6 +61,195 @@ void main() {
       throw StateError('Unexpected temporary test directory');
     }
     await directory.delete(recursive: true);
+  });
+
+  test('update cursor survives restart and failed batches roll back without changing history', () async {
+    await repository.saveSources(100, {-1});
+    await repository.writeBatch(
+      100,
+      -1,
+      [sample(message: 20)],
+      nextMessageId: 10,
+      expectedRevision: 0,
+      newestMessageId: 20,
+    );
+    await repository.writeUpdateBatch(
+      100,
+      -1,
+      [sample(message: 30)],
+      expectedRevision: 1,
+      checkpoint: const UpdateCheckpoint(highWater: 20, cursor: 25, target: 30),
+    );
+    await repository.close();
+    closed = true;
+    repository = SqliteMediaRepository.open(path, key);
+    closed = false;
+    final update = await repository.updateCheckpoint(100, -1);
+    expect(update.highWater, 20);
+    expect(update.cursor, 25);
+    expect(update.target, 30);
+    expect((await repository.checkpoint(100, -1)).nextMessageId, 10);
+    await expectLater(
+      repository.writeUpdateBatch(
+        100,
+        -1,
+        [sample(message: 40), sample(source: -2)],
+        expectedRevision: 2,
+        checkpoint: const UpdateCheckpoint(highWater: 40),
+      ),
+      throwsA(failure(LocalMediaFailure.invalidInput)),
+    );
+    expect(await repository.loadMedia(100), hasLength(2));
+    expect((await repository.updateCheckpoint(100, -1)).cursor, 25);
+    expect((await repository.checkpoint(100, -1)).revision, 2);
+    await repository.writeUpdateBatch(
+      100,
+      -1,
+      [],
+      expectedRevision: 2,
+      checkpoint: const UpdateCheckpoint(highWater: 30),
+    );
+    expect((await repository.checkpoint(100, -1)).nextMessageId, 10);
+    expect((await repository.updateCheckpoint(100, -1)).highWater, 30);
+  });
+
+  test('v3 migration preserves old positions without inventing dates and infers metadata', () async {
+    final item = sample(name: 'Design.Movie.2024.mp4');
+    await repository.saveSources(100, {-1});
+    await batch(100, item);
+    await repository.saveProgress(
+      100,
+      item.versionKey,
+      const Duration(seconds: 12),
+    );
+    await repository.close();
+    closed = true;
+    final db = sqlite3.open(path);
+    db.execute("PRAGMA key = '${base64Encode(key)}'");
+    db.execute('DROP TABLE work_members');
+    db.execute('DROP TABLE works');
+    db.execute('DROP TABLE media_organization');
+    db.execute('DROP TABLE update_checkpoints');
+    db.execute('DROP INDEX progress_recent');
+    for (final column in ['watched_at', 'completed', 'duration_ms']) {
+      db.execute('ALTER TABLE playback_progress DROP COLUMN $column');
+    }
+    db.userVersion = 3;
+    db.close();
+    repository = SqliteMediaRepository.open(path, key);
+    closed = false;
+    final record = (await repository.loadHistory(100)).single;
+    expect(record.position, const Duration(seconds: 12));
+    expect(record.watchedAt, isNull);
+    expect(record.completed, isFalse);
+    expect(record.media.organization.title, 'Design Movie');
+    expect((await repository.updateCheckpoint(100, -1)).highWater, 10);
+  });
+
+  test('history completion, unavailable versions, account isolation and removal preserve media', () async {
+    for (final account in [100, 200]) {
+      await repository.saveSources(account, {-1});
+      await batch(account, sample());
+      await repository.saveProgress(
+        account,
+        sample().versionKey,
+        const Duration(seconds: 12),
+        duration: const Duration(seconds: 60),
+      );
+    }
+    expect(
+      (await repository.loadHistory(100, unfinished: true)).single.available,
+      isTrue,
+    );
+    await repository.saveProgress(
+      100,
+      sample().versionKey,
+      const Duration(seconds: 60),
+      completed: true,
+      duration: const Duration(seconds: 60),
+    );
+    expect(await repository.loadHistory(100, unfinished: true), isEmpty);
+    expect((await repository.loadHistory(100)).single.completed, isTrue);
+    expect(
+      await repository.loadProgress(100, sample().versionKey),
+      Duration.zero,
+    );
+    await batch(100, sample(remote: 'replacement'), revision: 1);
+    expect((await repository.loadHistory(100)).single.available, isFalse);
+    await repository.saveSources(200, {});
+    expect((await repository.loadHistory(200)).single.available, isFalse);
+    await repository.close();
+    closed = true;
+    repository = SqliteMediaRepository.open(path, key);
+    closed = false;
+    expect((await repository.loadHistory(100)).single.completed, isTrue);
+    await repository.removeHistory(100, versionKey: sample().versionKey);
+    expect(await repository.loadHistory(100), isEmpty);
+    expect(await repository.loadHistory(200), hasLength(1));
+    expect(await repository.loadVersions(100, -1, 10), hasLength(2));
+    await repository.removeHistory(200);
+    expect(await repository.loadProgress(200, sample().versionKey), isNull);
+  });
+
+  test('manual organization survives imports, stays version-scoped, searches and resets', () async {
+    final item = sample(name: 'Design.Movie.2024.mp4');
+    await repository.saveSources(100, {-1});
+    await repository.saveSources(200, {-1});
+    await batch(100, item);
+    await batch(200, item);
+    const edited = MediaOrganization(
+      title: 'Correct title',
+      kind: MediaKind.series,
+      season: 2,
+      episode: 3,
+    );
+    await repository.saveOrganization(100, item.versionKey, edited);
+    await batch(100, item, revision: 1);
+    final found = (await repository.loadMedia(
+      100,
+      query: 'Correct',
+      kind: MediaKind.series,
+    )).single;
+    expect(found.organization.manual, isTrue);
+    expect(found.fileName, item.fileName);
+    expect(
+      (await repository.loadMedia(200)).single.organization.kind,
+      MediaKind.movie,
+    );
+    await batch(
+      100,
+      sample(remote: 'changed', name: item.fileName),
+      revision: 2,
+    );
+    expect(
+      (await repository.loadMedia(100)).single.organization.manual,
+      isFalse,
+    );
+    expect(
+      (await repository.loadVersions(100, -1, 10))
+          .where((v) => v.versionKey == item.versionKey)
+          .single
+          .organization
+          .title,
+      'Correct title',
+    );
+    await repository.saveOrganization(100, item.versionKey, null);
+    expect(
+      (await repository.loadVersions(100, -1, 10))
+          .where((v) => v.versionKey == item.versionKey)
+          .single
+          .organization
+          .manual,
+      isFalse,
+    );
+    await expectLater(
+      repository.saveOrganization(
+        100,
+        item.versionKey,
+        const MediaOrganization(title: ' ', kind: MediaKind.movie),
+      ),
+      throwsA(failure(LocalMediaFailure.invalidInput)),
+    );
   });
 
   test('encrypted media, selections, checkpoint and version progress survive reopening', () async {
@@ -132,6 +323,10 @@ void main() {
         ..execute("PRAGMA key = '${base64Encode(key)}'");
       db.execute('DROP TABLE playback_progress');
       db.execute('ALTER TABLE sources DROP COLUMN title');
+      db.execute('DROP TABLE work_members');
+      db.execute('DROP TABLE works');
+      db.execute('DROP TABLE media_organization');
+      db.execute('DROP TABLE update_checkpoints');
       db.userVersion = 1;
       db.close();
       repository = SqliteMediaRepository.open(path, key);
@@ -163,6 +358,14 @@ void main() {
     final db = sqlite3.open(path)
       ..execute("PRAGMA key = '${base64Encode(key)}'");
     db.execute('ALTER TABLE sources DROP COLUMN title');
+    db.execute('DROP INDEX progress_recent');
+    for (final column in ['watched_at', 'completed', 'duration_ms']) {
+      db.execute('ALTER TABLE playback_progress DROP COLUMN $column');
+    }
+    db.execute('DROP TABLE work_members');
+    db.execute('DROP TABLE works');
+    db.execute('DROP TABLE media_organization');
+    db.execute('DROP TABLE update_checkpoints');
     db.userVersion = 2;
     db.close();
     repository = SqliteMediaRepository.open(path, key);
@@ -212,6 +415,10 @@ void main() {
       final db = sqlite3.open(path)
         ..execute("PRAGMA key = '${base64Encode(key)}'");
       // A conflicting v2 table simulates a failed upgrade from an existing v1 file.
+      db.execute('DROP TABLE work_members');
+      db.execute('DROP TABLE works');
+      db.execute('DROP TABLE media_organization');
+      db.execute('DROP TABLE update_checkpoints');
       db.userVersion = 1;
       db.close();
       expect(
@@ -387,12 +594,21 @@ void main() {
       sample().versionKey,
       const Duration(seconds: 8),
     );
+    await repository.writeUpdateBatch(
+      100,
+      -1,
+      [],
+      expectedRevision: 1,
+      checkpoint: const UpdateCheckpoint(highWater: 20, cursor: 15, target: 30),
+    );
     await repository.removeSource(100, -1);
+    expect((await repository.updateCheckpoint(100, -1)).highWater, 0);
+    expect((await repository.updateCheckpoint(100, -1)).pending, isFalse);
     expect((await repository.loadMedia(100)).single.sourceId, -2);
     expect((await repository.loadMedia(200)).single.sourceId, -1);
     expect(await repository.loadVersions(100, -1, 10), isEmpty);
     expect(await repository.loadProgress(100, sample().versionKey), isNull);
-    expect((await repository.checkpoint(100, -1)).revision, 2);
+    expect((await repository.checkpoint(100, -1)).revision, 3);
   });
 
   test(
