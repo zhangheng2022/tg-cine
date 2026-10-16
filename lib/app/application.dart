@@ -26,6 +26,9 @@ import '../l10n/l10n.dart';
 import '../theme/theme.dart';
 import '../ui/features/settings/view_models/settings_view_model.dart';
 import 'tg_cine_flow.dart';
+import 'library_player_page.dart';
+import '../domain/ports/media_playback_repository.dart';
+import '../domain/models/local_media.dart';
 
 class Application extends StatefulWidget {
   const Application({
@@ -54,6 +57,8 @@ class _ApplicationState extends State<Application> {
   SourcesViewModel? _sources;
   LibraryViewModel? _library;
   AppLifecycleListener? _lifecycle;
+  MediaPlaybackRepository? _mediaPlayback;
+  GlobalKey<LibraryPlayerPageState>? _activePlayer;
 
   @override
   void initState() {
@@ -64,6 +69,9 @@ class _ApplicationState extends State<Application> {
     );
     unawaited(_settings.load());
     final telegram = widget.telegramRepository ?? createTelegramRepository();
+    if (telegram is MediaPlaybackRepository) {
+      _mediaPlayback = telegram as MediaPlaybackRepository;
+    }
     if (telegram != null) {
       _sources = SourcesViewModel(telegram);
       final MediaLibraryRepository? media =
@@ -79,6 +87,7 @@ class _ApplicationState extends State<Application> {
         onResume: () => _library?.activate(true),
         onExitRequested: () async {
           try {
+            await _activePlayer?.currentState?.pause();
             await _library?.pause();
             _library?.activate(false);
             await _sources!.close();
@@ -115,6 +124,27 @@ class _ApplicationState extends State<Application> {
     }
   }
 
+  Future<void> _openMedia(BuildContext context, LocalMedia media) async {
+    if (_activePlayer != null) return;
+    final key = _activePlayer = GlobalKey<LibraryPlayerPageState>();
+    _library?.activate(false);
+    await Navigator.of(context)
+        .push<void>(
+          MaterialPageRoute(
+            builder: (_) => LibraryPlayerPage(
+              key: key,
+              repository: _mediaPlayback!,
+              media: media,
+            ),
+          ),
+        )
+        .whenComplete(() async {
+          await key.currentState?.pause();
+          _activePlayer = null;
+          if (mounted) _library?.activate(true);
+        });
+  }
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: _settings,
@@ -146,6 +176,7 @@ class _ApplicationState extends State<Application> {
         videoSurface: _videoSurface,
         sources: _sources,
         library: _library,
+        onPlayMedia: _mediaPlayback == null ? null : _openMedia,
       ),
     ),
   );

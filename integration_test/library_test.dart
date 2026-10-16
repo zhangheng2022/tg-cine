@@ -166,7 +166,7 @@ void main() {
             tester.platformDispatcher.platformBrightnessTestValue = brightness;
             for (final scale in [1.0, 2.0]) {
               tester.platformDispatcher.textScaleFactorTestValue = scale;
-              final telegram = FakeTelegramRepository(
+              final telegram = PlaybackLayoutTelegramRepository(
                 restored: true,
                 persisted: {-1},
               );

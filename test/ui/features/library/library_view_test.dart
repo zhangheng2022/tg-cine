@@ -74,7 +74,7 @@ void main() {
               addTearDown(
                 tester.platformDispatcher.clearTextScaleFactorTestValue,
               );
-              final telegram = FakeTelegramRepository(
+              final telegram = PlaybackLayoutTelegramRepository(
                 restored: true,
                 persisted: {-1},
               );
@@ -116,6 +116,10 @@ void main() {
               await tester.tap(filename);
               await tester.pumpAndSettle();
               expect(find.text('原消息说明'), findsOneWidget);
+              final play = find.byKey(const ValueKey('play-selected-media'));
+              await tester.ensureVisible(play);
+              await tester.pumpAndSettle();
+              expect(tester.getSize(play).height, greaterThanOrEqualTo(48));
               final button = find.text('复制源消息链接');
               await tester.ensureVisible(button);
               await tester.pumpAndSettle();
@@ -141,7 +145,10 @@ void main() {
   testWidgets(
     'search preserves focus and navigation context, clears input, copies links and logout clears details',
     (tester) async {
-      final telegram = FakeTelegramRepository(restored: true, persisted: {-1});
+      final telegram = PlaybackLayoutTelegramRepository(
+        restored: true,
+        persisted: {-1},
+      );
       final library = FakeMediaLibraryRepository();
       String? clipboard;
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(

@@ -1,3 +1,6 @@
+import '../../../../domain/models/media_organization.dart';
+import '../../history/views/watch_record_tile.dart';
+
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
@@ -10,16 +13,19 @@ import '../../../../domain/models/local_media.dart';
 import '../../../core/app_empty_state.dart';
 import '../view_models/library_view_model.dart';
 import 'media_details_view.dart';
+import 'works_page.dart';
 
 class LibraryView extends StatelessWidget {
   const LibraryView({
     required this.onOpenSources,
     this.onOpenPlayer,
     this.viewModel,
+    this.onPlayMedia,
     super.key,
   });
   final VoidCallback onOpenSources;
   final VoidCallback? onOpenPlayer;
+  final FutureOr<void> Function(BuildContext, LocalMedia)? onPlayMedia;
   final LibraryViewModel? viewModel;
 
   Widget _empty(BuildContext context) => AppEmptyState(
@@ -66,6 +72,101 @@ class LibraryView extends StatelessWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      FTextField(
+                        key: ValueKey('library-query-${vm.queryRevision}'),
+                        label: Text(l10n.librarySearch),
+                        control: FTextFieldControl.managed(
+                          initial: TextEditingValue(text: vm.query),
+                          onChange: (value) => vm.search(value.text),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          workAction(
+                            l10n.worksTitle,
+                            () => Navigator.of(context).push<void>(
+                              MaterialPageRoute(
+                                builder: (_) => WorksPage(
+                                  viewModel: vm,
+                                  onPlayMedia: onPlayMedia,
+                                ),
+                              ),
+                            ),
+                          ),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(minHeight: 48),
+                            child: FButton(
+                              mainAxisSize: MainAxisSize.min,
+                              variant: FButtonVariant.outline,
+                              onPress: vm.toggleImports,
+                              child: Text(l10n.libraryImportSources),
+                            ),
+                          ),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(minHeight: 48),
+                            child: FButton(
+                              mainAxisSize: MainAxisSize.min,
+                              variant: FButtonVariant.ghost,
+                              onPress: onOpenSources,
+                              child: Text(l10n.libraryManageSources),
+                            ),
+                          ),
+                          if (onOpenPlayer != null)
+                            FButton(
+                              variant: FButtonVariant.ghost,
+                              onPress: onOpenPlayer,
+                              child: Text(l10n.openSelectedVideo),
+                            ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final option in <MediaKind?>[
+                            null,
+                            ...MediaKind.values,
+                          ])
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 48),
+                              child: FButton(
+                                mainAxisSize: MainAxisSize.min,
+                                variant: vm.kind == option
+                                    ? FButtonVariant.primary
+                                    : FButtonVariant.outline,
+                                onPress: () => vm.filter(option),
+                                child: Text(switch (option) {
+                                  null => l10n.mediaAll,
+                                  MediaKind.movie => l10n.mediaMovie,
+                                  MediaKind.series => l10n.mediaSeries,
+                                  MediaKind.unresolved => l10n.mediaUnresolved,
+                                }),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (vm.query.isEmpty &&
+                          vm.kind == null &&
+                          vm.continuing.isNotEmpty) ...[
+                        Text(
+                          l10n.continueWatching,
+                          style: context.theme.typography.body.lg.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        for (final record in vm.continuing)
+                          WatchRecordTile(
+                            record: record,
+                            onPlayMedia: onPlayMedia,
+                          ),
+                        const SizedBox(height: 24),
+                      ],
                       if (vm.failure != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
@@ -147,7 +248,9 @@ class LibraryView extends StatelessWidget {
                   );
                 }
                 final item = vm.media[index - importCount - 1];
-                final title = item.fileName.isEmpty
+                final title = item.organization.title.isNotEmpty
+                    ? item.organization.title
+                    : item.fileName.isEmpty
                     ? l10n.libraryUnknownFile
                     : item.fileName;
                 return Padding(
@@ -165,7 +268,10 @@ class LibraryView extends StatelessWidget {
                         if (!wide) {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
-                              builder: (_) => MediaDetailsPage(viewModel: vm),
+                              builder: (_) => MediaDetailsPage(
+                                viewModel: vm,
+                                onPlayMedia: onPlayMedia,
+                              ),
                             ),
                           );
                         }
@@ -183,6 +289,12 @@ class LibraryView extends StatelessWidget {
                                   style: context.theme.typography.body.md
                                       .copyWith(fontWeight: FontWeight.w600),
                                 ),
+                                if (item.organization.title.isNotEmpty)
+                                  Text(
+                                    item.fileName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 const SizedBox(height: 8),
                                 Text(
                                   vm.sourceTitle(item.sourceId),
@@ -215,75 +327,32 @@ class LibraryView extends StatelessWidget {
                 );
               },
             );
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                FTextField(
-                  key: ValueKey('library-query-${vm.queryRevision}'),
-                  label: Text(l10n.librarySearch),
-                  control: FTextFieldControl.managed(
-                    initial: TextEditingValue(text: vm.query),
-                    onChange: (value) => vm.search(value.text),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 48),
-                      child: FButton(
-                        variant: FButtonVariant.outline,
-                        onPress: vm.toggleImports,
-                        child: Text(l10n.libraryImportSources),
+            return wide
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(flex: 6, child: list),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        flex: 5,
+                        child: vm.selected != null
+                            ? MediaDetails(
+                                onPlayMedia: onPlayMedia,
+                                viewModel: vm,
+                                media: vm.selected!,
+                                key: ValueKey(vm.selected!.versionKey),
+                              )
+                            : Center(
+                                child: Text(
+                                  l10n.librarySelectFile,
+                                  textAlign: TextAlign.center,
+                                  style: context.theme.typography.body.md,
+                                ),
+                              ),
                       ),
-                    ),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 48),
-                      child: FButton(
-                        variant: FButtonVariant.ghost,
-                        onPress: onOpenSources,
-                        child: Text(l10n.libraryManageSources),
-                      ),
-                    ),
-                    if (onOpenPlayer != null)
-                      FButton(
-                        variant: FButtonVariant.ghost,
-                        onPress: onOpenPlayer,
-                        child: Text(l10n.openSelectedVideo),
-                      ),
-                  ],
-                ),
-                Expanded(
-                  child: wide
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(flex: 6, child: list),
-                            const SizedBox(width: 24),
-                            Expanded(
-                              flex: 5,
-                              child: vm.selected != null
-                                  ? MediaDetails(
-                                      viewModel: vm,
-                                      media: vm.selected!,
-                                      key: ValueKey(vm.selected!.versionKey),
-                                    )
-                                  : Center(
-                                      child: Text(
-                                        l10n.librarySelectFile,
-                                        textAlign: TextAlign.center,
-                                        style: context.theme.typography.body.md,
-                                      ),
-                                    ),
-                            ),
-                          ],
-                        )
-                      : list,
-                ),
-              ],
-            );
+                    ],
+                  )
+                : list;
           },
         );
       },
@@ -319,7 +388,9 @@ class _Imports extends StatelessWidget {
             liveRegion: true,
             child: Text(
               current
-                  ? l10n.libraryImportRunning
+                  ? (vm.updating
+                        ? l10n.libraryCheckingUpdates
+                        : l10n.libraryImportRunning)
                   : row.checkpoint.complete
                   ? l10n.libraryImportComplete
                   : row.checkpoint.paused
@@ -331,7 +402,28 @@ class _Imports extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          if (!row.checkpoint.complete)
+          Text(l10n.libraryUpdateNotice),
+          if (row.update.checkedAt != null) Text(l10n.libraryUpdatesChecked),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: FButton(
+                variant: FButtonVariant.outline,
+                onPress: vm.pausing || vm.runningSource != null
+                    ? null
+                    : () => unawaited(vm.start(row.sourceId, updates: true)),
+                child: Text(
+                  row.update.pending
+                      ? l10n.libraryResumeUpdates
+                      : l10n.libraryCheckUpdates,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (!row.checkpoint.complete || current)
             Align(
               alignment: Alignment.centerLeft,
               child: ConstrainedBox(

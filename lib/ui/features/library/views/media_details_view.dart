@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'media_organization_editor.dart';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:forui/forui.dart';
@@ -20,8 +24,13 @@ String mediaDuration(BuildContext context, int seconds) => seconds <= 0
     : '${seconds ~/ 3600}:${(seconds ~/ 60 % 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 
 class MediaDetailsPage extends StatelessWidget {
-  const MediaDetailsPage({required this.viewModel, super.key});
+  const MediaDetailsPage({
+    required this.viewModel,
+    this.onPlayMedia,
+    super.key,
+  });
   final LibraryViewModel viewModel;
+  final FutureOr<void> Function(BuildContext, LocalMedia)? onPlayMedia;
   @override
   Widget build(BuildContext context) => FScaffold(
     header: FHeader.nested(
@@ -39,6 +48,7 @@ class MediaDetailsPage extends StatelessWidget {
       builder: (context, _) => viewModel.selected != null
           ? MediaDetails(
               viewModel: viewModel,
+              onPlayMedia: onPlayMedia,
               media: viewModel.selected!,
               key: ValueKey(viewModel.selected!.versionKey),
             )
@@ -48,8 +58,14 @@ class MediaDetailsPage extends StatelessWidget {
 }
 
 class MediaDetails extends StatefulWidget {
-  const MediaDetails({required this.viewModel, required this.media, super.key});
+  const MediaDetails({
+    required this.viewModel,
+    required this.media,
+    this.onPlayMedia,
+    super.key,
+  });
   final LibraryViewModel viewModel;
+  final FutureOr<void> Function(BuildContext, LocalMedia)? onPlayMedia;
   final LocalMedia media;
   @override
   State<MediaDetails> createState() => _MediaDetailsState();
@@ -102,7 +118,20 @@ class _MediaDetailsState extends State<MediaDetails> {
             item.fileName.isEmpty ? l10n.libraryUnknownFile : item.fileName,
             style: typography.body.lg.copyWith(fontWeight: FontWeight.w600),
           ),
+          if (widget.onPlayMedia != null) ...[
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: FButton(
+                key: const ValueKey('play-selected-media'),
+                onPress: () => widget.onPlayMedia!(context, item),
+                child: Text(l10n.libraryPlay),
+              ),
+            ),
+          ],
           const SizedBox(height: 28),
+          MediaOrganizationEditor(viewModel: widget.viewModel, media: item),
+          const SizedBox(height: 24),
           for (final (label, value) in fields) ...[
             Text(
               label,

@@ -1,3 +1,5 @@
+import 'package:tg_cine/domain/models/watch_record.dart';
+
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -22,6 +24,58 @@ void main() {
     vm.dispose();
     await telegram.close();
   });
+  test(
+    'history refresh, removal errors and logout keep account state consistent',
+    () async {
+      final item = repository.records.first;
+      repository.watched.add(
+        WatchRecord(
+          media: item,
+          sourceTitle: 'design',
+          position: const Duration(seconds: 10),
+          duration: const Duration(seconds: 60),
+          completed: false,
+          available: true,
+        ),
+      );
+      await vm.refreshHistory();
+      expect(vm.history, hasLength(1));
+      expect(vm.continuing, hasLength(1));
+      repository.fail = true;
+      await vm.removeHistory(versionKey: item.versionKey);
+      expect(vm.history, hasLength(1));
+      expect(vm.historyFailure, TelegramFailure.storage);
+      repository.fail = false;
+      await vm.removeHistory(versionKey: item.versionKey);
+      expect(vm.history, isEmpty);
+      expect(vm.continuing, isEmpty);
+      expect(repository.records, hasLength(2));
+      telegram.emit(TelegramAccount(stage: TelegramStage.disconnected));
+      expect(vm.history, isEmpty);
+      expect(vm.continuing, isEmpty);
+    },
+  );
+
+  test(
+    'update run respects background pause and needs explicit restart',
+    () async {
+      repository.pending = Completer<void>();
+      final started = vm.start(-1, updates: true);
+      await Future<void>.delayed(Duration.zero);
+      vm.activate(false);
+      await Future<void>.delayed(Duration.zero);
+      expect(repository.paused, isTrue);
+      repository.pending!.complete();
+      await started;
+      vm.activate(true);
+      await vm.refresh();
+      expect(repository.calls, 1);
+      repository.pending = null;
+      await vm.start(-1, updates: true);
+      expect(repository.calls, 2);
+    },
+  );
+
   test('search and selection use imported data and account changes clear private state', () async {
     expect(vm.media, hasLength(2));
     vm.select(vm.media.first);

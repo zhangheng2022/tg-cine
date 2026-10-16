@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import '../domain/models/local_media.dart';
+
 import 'package:flutter/widgets.dart';
 
 import '../ui/features/home/view_models/home_view_model.dart';
@@ -14,6 +18,7 @@ class TgCineFlow extends StatefulWidget {
     this.videoSurface,
     this.sources,
     this.library,
+    this.onPlayMedia,
     super.key,
   });
 
@@ -22,6 +27,7 @@ class TgCineFlow extends StatefulWidget {
   final Widget? videoSurface;
   final SourcesViewModel? sources;
   final LibraryViewModel? library;
+  final FutureOr<void> Function(BuildContext, LocalMedia)? onPlayMedia;
 
   @override
   State<TgCineFlow> createState() => _TgCineFlowState();
@@ -38,6 +44,7 @@ class _TgCineFlowState extends State<TgCineFlow> {
     videoSurface: widget.videoSurface,
     sources: widget.sources,
     library: widget.library,
+    onPlayMedia: widget.onPlayMedia,
   );
 
   @override

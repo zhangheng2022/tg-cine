@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import '../../../../domain/models/local_media.dart';
+
 import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart' show MaterialPageRoute;
 import 'package:forui/forui.dart';
@@ -22,6 +26,7 @@ class HomeView extends StatelessWidget {
     this.videoSurface,
     this.sources,
     this.library,
+    this.onPlayMedia,
     super.key,
   });
 
@@ -31,6 +36,7 @@ class HomeView extends StatelessWidget {
   final Widget? videoSurface;
   final SourcesViewModel? sources;
   final LibraryViewModel? library;
+  final FutureOr<void> Function(BuildContext, LocalMedia)? onPlayMedia;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -89,6 +95,7 @@ class HomeView extends StatelessWidget {
                 child: switch (viewModel.selectedTab) {
                   HomeTab.library => LibraryView(
                     viewModel: library,
+                    onPlayMedia: onPlayMedia,
                     onOpenSources: () => viewModel.select(HomeTab.sources),
                     onOpenPlayer: player != null && videoSurface != null
                         ? () => Navigator.of(context).push(
@@ -103,6 +110,8 @@ class HomeView extends StatelessWidget {
                         : null,
                   ),
                   HomeTab.history => HistoryView(
+                    viewModel: library,
+                    onPlayMedia: onPlayMedia,
                     onOpenLibrary: () => viewModel.select(HomeTab.library),
                   ),
                   HomeTab.sources => SourcesView(
