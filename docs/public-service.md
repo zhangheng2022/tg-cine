@@ -17,3 +17,7 @@ flutter build apk --debug --dart-define-from-file=.cache/deployment/flutter-publ
 ```
 
 TDLib 安装与校验见 [移动原生构建](mobile-native.md)。Windows Debug 可以通过原有本机配置保留开发会话；这些路径不是公开构建输入。2026-10-15 已验证客户端真实配置解析、临时设备激活/刷新/撤销及 TDLib 经 v2 中转的五个 DC 握手，使用模拟安全存储隔离临时凭据，没有读取现有账号库。Android Debug 和 Windows Release 公开配置构建通过；未安装覆盖设备，整部影片播放和真机数据恢复尚未验收。
+
+2026-10-15：Worker 本地已按用户要求取消播放配额，尚未部署，线上仍执行旧额度。客户端不依赖公开 limits 字段，保留请求受限提示和本机资源保护；诊断和验证见 [播放器记录](flutter-player.md)。
+
+随后按用户追加确认，客户端应用内 6 连接、4 小时、累计传输与 Range 次数限制也已取消；每连接流控、回环校验、媒体缓存及等待队列等内存保护保留。Worker 未部署，旧线上额度仍可能拦截真实播放。

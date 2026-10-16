@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T17:23:58.8632421+08:00",
+  "generatedAt": "2026-10-15T18:06:22.064637+00:00",
   "title": "Design System: TG Cine",
   "extensions": {
     "breakpoints": [
@@ -48,7 +48,7 @@
     {
       "name": "Outline Button",
       "kind": "button",
-      "description": "加载更多与未选外观按钮的浅色浏览器示意；实际状态以 FButton 为准。",
+      "description": "加载更多、未选外观与作品整理操作的浅色浏览器示意；作品选择沿用 outline FButton 的 selected 状态，操作至少 48dp 并用 Wrap 换行。批量整理先预览后保存，失败保留表单，撤销归组先确认；实际状态以 Flutter 为准。",
       "html": "<button class=\"ds-outline\">加载更多来源</button>",
       "css": ".ds-outline{background:#fff;color:#0a0a0a;border:1px solid #e5e5e5;border-radius:10px;padding:14px 12px;min-height:48px;font:500 16px/1 Inter,sans-serif}.ds-outline:hover{cursor:pointer}.ds-outline:focus-visible{outline:auto}.ds-outline:active{cursor:pointer}.ds-outline:disabled{opacity:.5;cursor:default}"
     },
@@ -76,20 +76,20 @@
     {
       "name": "Original File Row",
       "kind": "custom",
-      "description": "浅色原文件行的设计数据示意；真实 FButton、两行文件名、来源省略与可换行大小/时长以 Flutter 为准，不提供片库播放按钮。",
+      "description": "浅色原文件行的设计数据示意；真实 FButton 优先显示归整片名并另列原文件名；标题两行省略、辅助文件名与来源一行省略、大小/时长可换行。文件行无播放按钮，播放入口位于详情与续看记录。",
       "html": "<button class=\"ds-file\"><strong>布局测试文件.mp4</strong><span>布局测试来源</span><div><span>128.0 MiB</span><span>时长未知</span></div></button>",
       "css": ".ds-file{display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;min-height:88px;padding:14px 12px;border:0;border-radius:10px;background:transparent;color:#0a0a0a;text-align:left;font:400 18px/1.75 Inter,sans-serif}.ds-file strong{font-weight:600}.ds-file div{display:flex;flex-wrap:wrap;gap:4px 12px}.ds-file:hover{cursor:pointer}.ds-file:focus-visible{outline:auto}.ds-file:active{cursor:pointer}"
     },
     {
       "name": "Import Source Status",
       "kind": "custom",
-      "description": "浅色来源导入状态的设计数据示意；真实状态、暂停/继续、liveRegion 与独立滚动列表以 Flutter 为准。只显示保存数量，不编造百分比。",
+      "description": "浅色来源导入状态的设计数据示意；真实状态、历史导入与手动新消息检查、暂停/继续、liveRegion 以 Flutter 为准；来源控制与搜索、筛选、续看、错误和文件分页位于同一滚动列表。只显示保存数量，不编造百分比。",
       "html": "<section class=\"ds-import\"><strong>布局测试来源</strong><span>已保存 25 个文件</span><span class=\"ds-import-state\" aria-live=\"polite\">已暂停</span><button>继续整理</button></section>",
       "css": ".ds-import{display:flex;flex-direction:column;align-items:flex-start;gap:6px;color:#0a0a0a;font:400 18px/1.75 Inter,sans-serif}.ds-import strong{font-weight:600}.ds-import-state{color:#737373;font-size:16px}.ds-import button{min-height:48px;padding:14px 12px;border:0;border-radius:10px;background:#171717;color:#fafafa;font:500 16px/1 Inter,sans-serif}.ds-import button:hover{cursor:pointer}.ds-import button:focus-visible{outline:auto}.ds-import button:active{cursor:pointer}.ds-import button:disabled{opacity:.5;cursor:default}"
     }
   ],
   "narrative": {
-    "overview": "沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。产品目标保留 Android、iOS、Web、Windows、macOS、Linux 六个平台，手机与宽屏界面须同时适配，中文（zh_CN）界面，图标使用 ForUI Lucide。外观可选跟随系统、浅色或深色，并保存在本机。\n片库、记录、来源和设置组成四项导航；原生客户端通过内置默认服务接入应用内登录、来源选择与原文件片库。默认服务状态与 Telegram 登录状态分开显示；未具备项目应用标识或对应 TDLib 的构建保持不可用，Windows Debug 可保留原本机数据目录并改用独立设备凭据。观看记录、电影与电视剧资料、片库播放和续看尚未接线。Windows 开发播放器沿用相同视觉系统；当前业务与平台验收边界以 PRODUCT.md 为准，线上默认服务结果见 docs/public-service.md。",
+    "overview": "沿用 ForUI 0.27.4 的 neutral light/dark touch 默认主题；本次未另行建立品牌视觉世界。产品目标保留 Android、iOS、Web、Windows、macOS、Linux 六个平台，手机与宽屏界面须同时适配，中文（zh_CN）界面，图标使用 ForUI Lucide。外观可选跟随系统、浅色或深色，并保存在本机。\n片库、记录、来源和设置组成四项导航；原生客户端通过内置默认服务接入应用内登录、来源选择与原文件片库。默认服务状态与 Telegram 登录状态分开显示；未具备项目应用标识或对应 TDLib 的构建保持不可用，Windows Debug 可保留原本机数据目录并改用独立设备凭据。原生片库详情在文件名下提供「播放此文件」，进入播放器后显示所选文件名并自动恢复本机进度；保存失败单独提示。观看记录、首页最近五条续看、手动检查新消息、本机保守文件名识别与人工修正，以及作品归组、季集与当前文件版本选择、批量整理已接线；作品关联不合并原始消息或文件身份，在线影视资料、海报与跨设备同步未接入。Windows 开发播放器沿用相同视觉系统；当前业务与平台验收边界以 PRODUCT.md 为准，服务发布证据见 [Worker 发布记录](https://github.com/zhangheng2022/tg-cine-worker/blob/master/docs/deployment.md)。",
     "dos": [
       "Do 使用当前 ForUI 主题、默认组件状态及 Lucide 图标，保留安全区域、字体缩放和滚动。",
       "Do 按可用窗口宽度适配导航、表单和固定保存区，同时验证手机、宽屏、明暗主题与两倍字体。",

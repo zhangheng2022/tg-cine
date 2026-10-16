@@ -44,7 +44,7 @@ dart run tool/prepare_mobile_config.dart <API配置> <relay-bridge.json> <令牌
 flutter run --debug -d <设备ID> --dart-define-from-file=.cache/deployment/flutter-mobile-defines.json
 ```
 
-该配置包含开发凭据，只用于本机 Debug，不可分发。Android/iOS 的公开构建入口拒绝非空开发配置。默认服务现已支持自动配置、独立设备凭据、刷新/撤销与持久额度；公开构建只注入项目 Telegram 应用标识并打包 TDLib，不携带共享开发令牌。Windows Debug 可额外指定 `TG_CINE_USE_DEFAULT_SERVICE=true`，保留本机会话路径并改用公共凭据；构建和验收边界见 [默认服务](public-service.md)。
+该配置包含开发凭据，只用于本机 Debug，不可分发。Android/iOS 的公开构建入口拒绝非空开发配置。默认服务现已支持自动配置、独立设备凭据、刷新/撤销与请求限流；公开构建只注入项目 Telegram 应用标识并打包 TDLib，不携带共享开发令牌。Windows Debug 可额外指定 `TG_CINE_USE_DEFAULT_SERVICE=true`，保留本机会话路径并改用公共凭据；构建和验收边界见 [默认服务](public-service.md)。
 
 ## 验证边界（历史记录）
 
