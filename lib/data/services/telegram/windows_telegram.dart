@@ -22,6 +22,7 @@ import 'native_telegram_initializer.dart';
 Future<TelegramConnection> openWindowsTelegram(
   String path, {
   bool defaultService = false,
+  void Function(RelayBridge)? onBridgeReady,
 }) async {
   WindowsSession? session;
   WindowsSession? mediaSession;
@@ -108,6 +109,7 @@ Future<TelegramConnection> openWindowsTelegram(
         targets: targets,
       );
     }
+    onBridgeReady?.call(bridge);
     try {
       client = TdlibProbe(configuredPath('library'));
     } catch (_) {

@@ -282,7 +282,6 @@ Future<void> main(List<String> arguments) async {
                   if (response['@type'] == 'file')
                     'downloadOffset': response['local']['download_offset'],
                   'activeConnections': bridge!.activeConnections,
-                  'capacityRejections': bridge.capacityRejections,
                   'traffic': bridge.traffic,
                   if (response['@type'] == 'fileDownloadedPrefixSize')
                     'readableBytes': response['size'],
@@ -524,7 +523,6 @@ Future<void> main(List<String> arguments) async {
       if (error is TimeoutException) 'timedOut': true,
       if (client != null) 'recentResponseTypes': client.recentResponses,
       if (bridge != null) 'activeConnections': bridge.activeConnections,
-      if (bridge != null) 'capacityRejections': bridge.capacityRejections,
       if (bridge != null) 'traffic': bridge.traffic,
       'mediaFileState': ?mediaFileState,
     };

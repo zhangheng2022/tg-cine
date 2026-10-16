@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-/// A loopback-only SOCKS5 bridge for the native TDLib feasibility test.
+/// Loopback-only SOCKS5 bridge with bounded per-connection flow control.
 class RelayBridge {
   RelayBridge._(
     this._server,
@@ -15,11 +15,6 @@ class RelayBridge {
     this._resolveTarget,
   ) {
     _subscription = _server.listen((socket) {
-      if (_clients.length >= 6) {
-        _capacityRejections++;
-        socket.destroy();
-        return;
-      }
       _clients.add(socket);
       unawaited(_serve(socket));
     });
@@ -37,7 +32,8 @@ class RelayBridge {
   late final StreamSubscription<Socket> _subscription;
   bool _closed = false;
   (String, int)? _lastRejectedTarget;
-  int _capacityRejections = 0;
+  final _connectionFailures = <int, int>{};
+  Map<int, int> get connectionFailures => Map.unmodifiable(_connectionFailures);
   final _traffic = <String, Map<String, int>>{};
   final _traceIds = <String>[];
   List<String> get traceIds => List.unmodifiable(_traceIds);
@@ -45,7 +41,6 @@ class RelayBridge {
   int get port => _server.port;
   (String, int)? get lastRejectedTarget => _lastRejectedTarget;
   int get activeConnections => _clients.length;
-  int get capacityRejections => _capacityRejections;
   Map<String, Map<String, int>> get traffic => {
     for (final entry in _traffic.entries) entry.key: Map.of(entry.value),
   };
@@ -187,25 +182,35 @@ class RelayBridge {
       connected = true;
 
       final ws = upstream;
-      Completer<void>? ack;
+      // v2 allows 256 KiB in flight; four bounded frames avoid one RTT per small RPC.
+      final pendingAcks = <(Completer<void>, Stopwatch, Timer)>[];
       Future<void> upload() async {
         await for (final bytes in input.remaining()) {
           for (var offset = 0; offset < bytes.length; offset += 65536) {
-            ack = Completer<void>();
+            while (pendingAcks.length >= 4) {
+              await pendingAcks.first.$1.future;
+            }
+            final ack = Completer<void>();
+            // A peer can close before upload reaches the wait for this frame.
+            ack.future.ignore();
+            final confirming = Stopwatch()..start();
+            final timeout = Timer(const Duration(seconds: 30), () {
+              if (!ack.isCompleted) {
+                ack.completeError(
+                  TimeoutException('Relay acknowledgement timed out'),
+                );
+                client.destroy();
+              }
+            });
+            pendingAcks.add((ack, confirming, timeout));
             final end = (offset + 65536).clamp(0, bytes.length);
             ws.add(Uint8List.sublistView(bytes, offset, end));
-            final confirming = Stopwatch()..start();
             counters['uploadedBytes'] =
                 counters['uploadedBytes']! + end - offset;
-            await ack!.future.timeout(const Duration(seconds: 30));
-            final elapsed = confirming.elapsedMicroseconds;
-            counters['upAckCount'] = counters['upAckCount']! + 1;
-            counters['upAckUs'] = counters['upAckUs']! + elapsed;
-            if (elapsed > counters['maxUpAckUs']!) {
-              counters['maxUpAckUs'] = elapsed;
-            }
-            ack = null;
           }
+        }
+        while (pendingAcks.isNotEmpty) {
+          await pendingAcks.first.$1.future;
         }
       }
 
@@ -213,8 +218,16 @@ class RelayBridge {
         try {
           while (await incoming.moveNext()) {
             final frame = incoming.current;
-            if (frame == 'ACK' && ack != null && !ack!.isCompleted) {
-              ack!.complete();
+            if (frame == 'ACK' && pendingAcks.isNotEmpty) {
+              final ack = pendingAcks.removeAt(0);
+              ack.$3.cancel();
+              final elapsed = ack.$2.elapsedMicroseconds;
+              counters['upAckCount'] = counters['upAckCount']! + 1;
+              counters['upAckUs'] = counters['upAckUs']! + elapsed;
+              if (elapsed > counters['maxUpAckUs']!) {
+                counters['maxUpAckUs'] = elapsed;
+              }
+              if (!ack.$1.isCompleted) ack.$1.complete();
             } else if (frame is List<int> &&
                 frame.isNotEmpty &&
                 frame.length <= 65536) {
@@ -248,16 +261,28 @@ class RelayBridge {
             counters[reasonCounter] = counters[reasonCounter]! + 1;
           }
           // Release a sender waiting for confirmation when the relay disappears.
-          if (ack != null && !ack!.isCompleted) {
-            ack!.completeError(const SocketException('Relay closed'));
+          for (final ack in pendingAcks) {
+            ack.$3.cancel();
+            if (!ack.$1.isCompleted) {
+              ack.$1.completeError(const SocketException('Relay closed'));
+            }
           }
+          pendingAcks.clear();
         }
       }
 
       downloading = download();
       await Future.any([upload(), downloading]);
-    } catch (_) {
+    } catch (error) {
       if (!connected && !_closed) {
+        final status = error is WebSocketException
+            ? error.httpStatusCode ?? 0
+            : 0;
+        _connectionFailures.update(
+          status,
+          (count) => count + 1,
+          ifAbsent: () => 1,
+        );
         try {
           client.add([5, 1, 0, 1, 0, 0, 0, 0, 0, 0]);
           await client.flush();
