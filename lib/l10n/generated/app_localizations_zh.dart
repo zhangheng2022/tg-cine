@@ -110,6 +110,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveSettingsError => '外观未保存，请重新选择后重试。';
 
   @override
+  String get playbackFullscreen => '全屏播放';
+
+  @override
+  String get playbackExitFullscreen => '退出全屏';
+
+  @override
+  String get playbackHideControls => '隐藏控件';
+
+  @override
+  String get playbackShowControls => '显示播放控件';
+
+  @override
+  String get worksNoNextEpisode => '当前片库没有下一集；可返回作品查看其他文件或检查来源更新。';
+
+  @override
+  String get worksChooseNextVersion => '选择片库中下一集的文件版本';
+
+  @override
+  String get worksUnwatched => '未观看';
+
+  @override
+  String worksWatchedPosition(int minutes) {
+    return '已看到 $minutes 分钟';
+  }
+
+  @override
+  String get worksNextEpisode => '下一集';
+
+  @override
   String get retry => '重试';
 
   @override
@@ -158,7 +187,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playbackBuffering => '正在缓冲，播放将在数据就绪后继续…';
 
   @override
-  String get playbackError => '视频暂时无法播放。请确认本机媒体服务仍在运行，再重试。';
+  String get playbackError => '视频暂时无法播放。请检查网络、默认服务和来源访问权限后重试。';
+
+  @override
+  String get libraryPlay => '播放此文件';
+
+  @override
+  String get playbackProgressError => '进度未能保存。请检查本机存储，继续播放后会重试。';
 
   @override
   String get playbackPlaying => '正在播放';
@@ -303,7 +338,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get libraryImportSources => '导入来源';
 
   @override
-  String get libraryImportNotice => '分批整理消息，不下载视频。应用切到后台时暂停；再次打开后可继续。';
+  String get libraryImportNotice => '分批保存来源中的视频信息。可暂停后继续，检查更新只读取新消息。';
 
   @override
   String libraryImportCount(int count) {
@@ -405,7 +440,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '默认服务自动连接。Telegram 登录会话与片库保存在本机，无需填写服务地址或访问令牌。';
 
   @override
-  String get telegramServiceLimited => '默认服务额度或连接数已达上限，请暂停导入并稍后重试。';
+  String get telegramServiceLimited => '默认服务暂时限制请求，请暂停导入并稍后重试。';
 
   @override
   String get serviceConnected => '已连接';
@@ -415,4 +450,187 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get telegramServiceAccessExpired => '默认服务访问已失效，请重新连接以重新启用。';
+
+  @override
+  String get historyUnknownDate => '早期记录 · 观看时间未知';
+
+  @override
+  String get historyCompleted => '已看完';
+
+  @override
+  String historyProgress(String position, String duration) {
+    return '已看 $position / $duration';
+  }
+
+  @override
+  String get historyUnavailable => '来源未选中或文件已被替换，请到来源页或片库确认。';
+
+  @override
+  String get historyContinue => '继续观看';
+
+  @override
+  String get historyReplay => '重新播放';
+
+  @override
+  String get historyRemove => '移除记录';
+
+  @override
+  String get historyLocalNotice => '观看记录仅保存在本机，按当前账号独立保存。';
+
+  @override
+  String get historyClearNotice => '清空后将移除本机观看记录与续播位置，片库文件和 Telegram 内容会保留。';
+
+  @override
+  String get historyConfirmClear => '确认清空记录';
+
+  @override
+  String get historyClear => '清空观看记录';
+
+  @override
+  String get cancelAction => '取消';
+
+  @override
+  String get historyError => '观看记录读取或保存失败，请重新读取后重试。';
+
+  @override
+  String get continueWatching => '继续观看';
+
+  @override
+  String get libraryCheckUpdates => '检查更新';
+
+  @override
+  String get libraryResumeUpdates => '继续检查更新';
+
+  @override
+  String get libraryCheckingUpdates => '正在检查新消息…';
+
+  @override
+  String get libraryUpdatesChecked => '已完成上次新消息检查';
+
+  @override
+  String get libraryUpdateNotice => '手动检查新消息；历史导入进度会保留。';
+
+  @override
+  String get mediaAll => '全部';
+
+  @override
+  String get mediaMovie => '电影';
+
+  @override
+  String get mediaSeries => '电视剧';
+
+  @override
+  String get mediaUnresolved => '待整理';
+
+  @override
+  String get mediaEdit => '修正影视信息';
+
+  @override
+  String get mediaTitle => '片名';
+
+  @override
+  String get mediaYear => '年份（可选）';
+
+  @override
+  String get mediaSeason => '季';
+
+  @override
+  String get mediaEpisode => '集';
+
+  @override
+  String get mediaSave => '保存信息';
+
+  @override
+  String get mediaReset => '恢复文件名识别';
+
+  @override
+  String get mediaManual => '手动修正';
+
+  @override
+  String get mediaInferred => '从文件名识别，可能需要修正';
+
+  @override
+  String get mediaUnresolvedNotice => '未能从文件名确定影视信息，可手动填写。';
+
+  @override
+  String get mediaEditInvalid =>
+      '请填写片名；年份需为 1888–2100，电视剧需填写季（0–999）和集（1–9999）。';
+
+  @override
+  String get mediaEditError => '影视信息保存失败，请重试。';
+
+  @override
+  String get mediaOriginalName => '原文件名';
+
+  @override
+  String get worksTitle => '作品片库';
+
+  @override
+  String get worksOrganizeFiles => '整理文件';
+
+  @override
+  String get worksUnknownYear => '年份未知';
+
+  @override
+  String get worksSelectionNotice => '选择要整理的文件，每批最多 100 个。每个文件保留独立观看进度。';
+
+  @override
+  String worksSelected(int count) {
+    return '已选择 $count 个文件';
+  }
+
+  @override
+  String worksFileCount(int count) {
+    return '$count 个文件版本';
+  }
+
+  @override
+  String worksEpisode(int season, int episode) {
+    return '第 $season 季 · 第 $episode 集';
+  }
+
+  @override
+  String get worksAssign => '调整归组';
+
+  @override
+  String get worksDetach => '撤销选中归组';
+
+  @override
+  String get worksConfirmDetach => '确认撤销归组';
+
+  @override
+  String get worksDetachNotice => '选中文件将退出作品归组，仍可在整理文件中找到；原文件、影视信息和观看记录保留。';
+
+  @override
+  String get worksSelect => '选择文件';
+
+  @override
+  String get worksDeselect => '取消选择';
+
+  @override
+  String get worksEmpty => '暂无匹配条目；可在整理文件中选择文件并建立作品。';
+
+  @override
+  String get worksLoadMore => '加载更多条目';
+
+  @override
+  String get worksBatchNotice => '先确认共同片名、年份和类型，电视剧逐条确认季集；预览后整批保存。';
+
+  @override
+  String get worksChooseExisting => '选择已有作品';
+
+  @override
+  String get worksCreateSeparate => '新建独立作品';
+
+  @override
+  String get worksPreview => '预览归组';
+
+  @override
+  String get worksConfirmAssign => '确认整批保存';
+
+  @override
+  String get worksBackToEdit => '返回修改';
+
+  @override
+  String get worksSaving => '正在保存归组…';
 }

@@ -94,6 +94,7 @@ class HomeView extends StatelessWidget {
                         ? () => Navigator.of(context).push(
                             MaterialPageRoute<void>(
                               builder: (_) => PlayerView(
+                                development: true,
                                 viewModel: player!,
                                 videoSurface: videoSurface!,
                               ),

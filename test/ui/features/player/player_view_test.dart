@@ -67,6 +67,36 @@ void main() {
               playback.seeks.last,
               greaterThan(const Duration(seconds: 10)),
             );
+            final thumb = find.descendant(
+              of: track,
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is GestureDetector &&
+                    widget.onHorizontalDragUpdate != null,
+              ),
+            );
+            for (final fraction in [0.5, 0.1]) {
+              final rect = tester.getRect(track);
+              final handle = tester.getRect(thumb);
+              final destination = Offset(
+                rect.left +
+                    handle.width / 2 +
+                    (rect.width - handle.width) * fraction,
+                rect.center.dy,
+              );
+              await tester.timedDragFrom(
+                handle.center,
+                destination - handle.center,
+                const Duration(milliseconds: 600),
+              );
+              await tester.pumpAndSettle();
+              expect(
+                (playback.seeks.last.inMilliseconds -
+                        playback.state.duration.inMilliseconds * fraction)
+                    .abs(),
+                lessThan(3000),
+              );
+            }
             playback.emit(const PlaybackState(status: PlaybackStatus.failed));
             await tester.pumpAndSettle();
             await tester.ensureVisible(

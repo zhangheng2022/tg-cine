@@ -292,6 +292,60 @@ abstract class AppLocalizations {
   /// **'外观未保存，请重新选择后重试。'**
   String get saveSettingsError;
 
+  /// No description provided for @playbackFullscreen.
+  ///
+  /// In zh, this message translates to:
+  /// **'全屏播放'**
+  String get playbackFullscreen;
+
+  /// No description provided for @playbackExitFullscreen.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出全屏'**
+  String get playbackExitFullscreen;
+
+  /// No description provided for @playbackHideControls.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏控件'**
+  String get playbackHideControls;
+
+  /// No description provided for @playbackShowControls.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示播放控件'**
+  String get playbackShowControls;
+
+  /// No description provided for @worksNoNextEpisode.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前片库没有下一集；可返回作品查看其他文件或检查来源更新。'**
+  String get worksNoNextEpisode;
+
+  /// No description provided for @worksChooseNextVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择片库中下一集的文件版本'**
+  String get worksChooseNextVersion;
+
+  /// No description provided for @worksUnwatched.
+  ///
+  /// In zh, this message translates to:
+  /// **'未观看'**
+  String get worksUnwatched;
+
+  /// No description provided for @worksWatchedPosition.
+  ///
+  /// In zh, this message translates to:
+  /// **'已看到 {minutes} 分钟'**
+  String worksWatchedPosition(int minutes);
+
+  /// No description provided for @worksNextEpisode.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一集'**
+  String get worksNextEpisode;
+
   /// No description provided for @retry.
   ///
   /// In zh, this message translates to:
@@ -385,8 +439,20 @@ abstract class AppLocalizations {
   /// No description provided for @playbackError.
   ///
   /// In zh, this message translates to:
-  /// **'视频暂时无法播放。请确认本机媒体服务仍在运行，再重试。'**
+  /// **'视频暂时无法播放。请检查网络、默认服务和来源访问权限后重试。'**
   String get playbackError;
+
+  /// No description provided for @libraryPlay.
+  ///
+  /// In zh, this message translates to:
+  /// **'播放此文件'**
+  String get libraryPlay;
+
+  /// No description provided for @playbackProgressError.
+  ///
+  /// In zh, this message translates to:
+  /// **'进度未能保存。请检查本机存储，继续播放后会重试。'**
+  String get playbackProgressError;
 
   /// No description provided for @playbackPlaying.
   ///
@@ -667,7 +733,7 @@ abstract class AppLocalizations {
   /// No description provided for @libraryImportNotice.
   ///
   /// In zh, this message translates to:
-  /// **'分批整理消息，不下载视频。应用切到后台时暂停；再次打开后可继续。'**
+  /// **'分批保存来源中的视频信息。可暂停后继续，检查更新只读取新消息。'**
   String get libraryImportNotice;
 
   /// No description provided for @libraryImportCount.
@@ -865,7 +931,7 @@ abstract class AppLocalizations {
   /// No description provided for @telegramServiceLimited.
   ///
   /// In zh, this message translates to:
-  /// **'默认服务额度或连接数已达上限，请暂停导入并稍后重试。'**
+  /// **'默认服务暂时限制请求，请暂停导入并稍后重试。'**
   String get telegramServiceLimited;
 
   /// No description provided for @serviceConnected.
@@ -885,6 +951,354 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'默认服务访问已失效，请重新连接以重新启用。'**
   String get telegramServiceAccessExpired;
+
+  /// No description provided for @historyUnknownDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'早期记录 · 观看时间未知'**
+  String get historyUnknownDate;
+
+  /// No description provided for @historyCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已看完'**
+  String get historyCompleted;
+
+  /// No description provided for @historyProgress.
+  ///
+  /// In zh, this message translates to:
+  /// **'已看 {position} / {duration}'**
+  String historyProgress(String position, String duration);
+
+  /// No description provided for @historyUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'来源未选中或文件已被替换，请到来源页或片库确认。'**
+  String get historyUnavailable;
+
+  /// No description provided for @historyContinue.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续观看'**
+  String get historyContinue;
+
+  /// No description provided for @historyReplay.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新播放'**
+  String get historyReplay;
+
+  /// No description provided for @historyRemove.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除记录'**
+  String get historyRemove;
+
+  /// No description provided for @historyLocalNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'观看记录仅保存在本机，按当前账号独立保存。'**
+  String get historyLocalNotice;
+
+  /// No description provided for @historyClearNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空后将移除本机观看记录与续播位置，片库文件和 Telegram 内容会保留。'**
+  String get historyClearNotice;
+
+  /// No description provided for @historyConfirmClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认清空记录'**
+  String get historyConfirmClear;
+
+  /// No description provided for @historyClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空观看记录'**
+  String get historyClear;
+
+  /// No description provided for @cancelAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get cancelAction;
+
+  /// No description provided for @historyError.
+  ///
+  /// In zh, this message translates to:
+  /// **'观看记录读取或保存失败，请重新读取后重试。'**
+  String get historyError;
+
+  /// No description provided for @continueWatching.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续观看'**
+  String get continueWatching;
+
+  /// No description provided for @libraryCheckUpdates.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查更新'**
+  String get libraryCheckUpdates;
+
+  /// No description provided for @libraryResumeUpdates.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续检查更新'**
+  String get libraryResumeUpdates;
+
+  /// No description provided for @libraryCheckingUpdates.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检查新消息…'**
+  String get libraryCheckingUpdates;
+
+  /// No description provided for @libraryUpdatesChecked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成上次新消息检查'**
+  String get libraryUpdatesChecked;
+
+  /// No description provided for @libraryUpdateNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'手动检查新消息；历史导入进度会保留。'**
+  String get libraryUpdateNotice;
+
+  /// No description provided for @mediaAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get mediaAll;
+
+  /// No description provided for @mediaMovie.
+  ///
+  /// In zh, this message translates to:
+  /// **'电影'**
+  String get mediaMovie;
+
+  /// No description provided for @mediaSeries.
+  ///
+  /// In zh, this message translates to:
+  /// **'电视剧'**
+  String get mediaSeries;
+
+  /// No description provided for @mediaUnresolved.
+  ///
+  /// In zh, this message translates to:
+  /// **'待整理'**
+  String get mediaUnresolved;
+
+  /// No description provided for @mediaEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'修正影视信息'**
+  String get mediaEdit;
+
+  /// No description provided for @mediaTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'片名'**
+  String get mediaTitle;
+
+  /// No description provided for @mediaYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'年份（可选）'**
+  String get mediaYear;
+
+  /// No description provided for @mediaSeason.
+  ///
+  /// In zh, this message translates to:
+  /// **'季'**
+  String get mediaSeason;
+
+  /// No description provided for @mediaEpisode.
+  ///
+  /// In zh, this message translates to:
+  /// **'集'**
+  String get mediaEpisode;
+
+  /// No description provided for @mediaSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存信息'**
+  String get mediaSave;
+
+  /// No description provided for @mediaReset.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复文件名识别'**
+  String get mediaReset;
+
+  /// No description provided for @mediaManual.
+  ///
+  /// In zh, this message translates to:
+  /// **'手动修正'**
+  String get mediaManual;
+
+  /// No description provided for @mediaInferred.
+  ///
+  /// In zh, this message translates to:
+  /// **'从文件名识别，可能需要修正'**
+  String get mediaInferred;
+
+  /// No description provided for @mediaUnresolvedNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'未能从文件名确定影视信息，可手动填写。'**
+  String get mediaUnresolvedNotice;
+
+  /// No description provided for @mediaEditInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写片名；年份需为 1888–2100，电视剧需填写季（0–999）和集（1–9999）。'**
+  String get mediaEditInvalid;
+
+  /// No description provided for @mediaEditError.
+  ///
+  /// In zh, this message translates to:
+  /// **'影视信息保存失败，请重试。'**
+  String get mediaEditError;
+
+  /// No description provided for @mediaOriginalName.
+  ///
+  /// In zh, this message translates to:
+  /// **'原文件名'**
+  String get mediaOriginalName;
+
+  /// No description provided for @worksTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'作品片库'**
+  String get worksTitle;
+
+  /// No description provided for @worksOrganizeFiles.
+  ///
+  /// In zh, this message translates to:
+  /// **'整理文件'**
+  String get worksOrganizeFiles;
+
+  /// No description provided for @worksUnknownYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'年份未知'**
+  String get worksUnknownYear;
+
+  /// No description provided for @worksSelectionNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要整理的文件，每批最多 100 个。每个文件保留独立观看进度。'**
+  String get worksSelectionNotice;
+
+  /// No description provided for @worksSelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} 个文件'**
+  String worksSelected(int count);
+
+  /// No description provided for @worksFileCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个文件版本'**
+  String worksFileCount(int count);
+
+  /// No description provided for @worksEpisode.
+  ///
+  /// In zh, this message translates to:
+  /// **'第 {season} 季 · 第 {episode} 集'**
+  String worksEpisode(int season, int episode);
+
+  /// No description provided for @worksAssign.
+  ///
+  /// In zh, this message translates to:
+  /// **'调整归组'**
+  String get worksAssign;
+
+  /// No description provided for @worksDetach.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销选中归组'**
+  String get worksDetach;
+
+  /// No description provided for @worksConfirmDetach.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认撤销归组'**
+  String get worksConfirmDetach;
+
+  /// No description provided for @worksDetachNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'选中文件将退出作品归组，仍可在整理文件中找到；原文件、影视信息和观看记录保留。'**
+  String get worksDetachNotice;
+
+  /// No description provided for @worksSelect.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件'**
+  String get worksSelect;
+
+  /// No description provided for @worksDeselect.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消选择'**
+  String get worksDeselect;
+
+  /// No description provided for @worksEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无匹配条目；可在整理文件中选择文件并建立作品。'**
+  String get worksEmpty;
+
+  /// No description provided for @worksLoadMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载更多条目'**
+  String get worksLoadMore;
+
+  /// No description provided for @worksBatchNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'先确认共同片名、年份和类型，电视剧逐条确认季集；预览后整批保存。'**
+  String get worksBatchNotice;
+
+  /// No description provided for @worksChooseExisting.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择已有作品'**
+  String get worksChooseExisting;
+
+  /// No description provided for @worksCreateSeparate.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建独立作品'**
+  String get worksCreateSeparate;
+
+  /// No description provided for @worksPreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'预览归组'**
+  String get worksPreview;
+
+  /// No description provided for @worksConfirmAssign.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认整批保存'**
+  String get worksConfirmAssign;
+
+  /// No description provided for @worksBackToEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回修改'**
+  String get worksBackToEdit;
+
+  /// No description provided for @worksSaving.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在保存归组…'**
+  String get worksSaving;
 }
 
 class _AppLocalizationsDelegate
