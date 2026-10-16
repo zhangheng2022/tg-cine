@@ -77,6 +77,62 @@ void main() {
     },
   );
 
+  test('unlimited playback crosses old cumulative budgets while diagnostics stay bounded', () async {
+    final server = await LocalMediaServer.start(
+      size: 1,
+      mimeType: 'video/mp4',
+      maxBytes: null,
+      maxRanges: null,
+      read: (_, count) async => Uint8List(count),
+    );
+    addTearDown(server.close);
+    // Seed cumulative counters instead of transferring 8 GiB in a unit test.
+    server.bytesServed = 8 * 1024 * 1024 * 1024;
+    server.rangeRequests = 8192;
+    for (
+      var index = 0;
+      index < LocalMediaServer.maxRecordedRanges + 2;
+      index++
+    ) {
+      final request = await client.getUrl(server.uri);
+      request.headers.set(HttpHeaders.rangeHeader, 'bytes=0-0');
+      final response = await request.close();
+      expect(response.statusCode, 206);
+      expect(await response.expand((chunk) => chunk).toList(), [0]);
+    }
+    expect(server.budgetExhausted, isFalse);
+    expect(server.bytesServed, 8 * 1024 * 1024 * 1024 + 258);
+    expect(server.rangeRequests, 8192 + 258);
+    expect(server.ranges, hasLength(LocalMediaServer.maxRecordedRanges));
+    await server.close();
+    expect(server.pendingRequests, 0);
+  });
+
+  test(
+    'explicit tool range budget uses total requests after diagnostics rotate',
+    () async {
+      final server = await LocalMediaServer.start(
+        size: 1,
+        mimeType: 'video/mp4',
+        maxBytes: null,
+        maxRanges: 300,
+        read: (_, count) async => Uint8List(count),
+      );
+      addTearDown(server.close);
+      for (var index = 0; index < 300; index++) {
+        final response = await (await client.getUrl(server.uri)).close();
+        expect(response.statusCode, 200);
+        await response.drain<void>();
+      }
+      final response = await (await client.getUrl(server.uri)).close();
+      expect(response.statusCode, 503);
+      await response.drain<void>();
+      expect(server.rangeRequests, 300);
+      expect(server.ranges, hasLength(LocalMediaServer.maxRecordedRanges));
+      expect(server.budgetExhausted, isTrue);
+    },
+  );
+
   test(
     'enforces an explicit bounded session budget and validates its upper limit',
     () async {
@@ -104,7 +160,7 @@ void main() {
       await response.drain<void>();
       expect(server.bytesServed, 5);
       expect(server.ranges.length, 1);
-      for (final limit in [0, -1, 128 * 1024 * 1024 + 1]) {
+      for (final limit in [0, -1, 8 * 1024 * 1024 * 1024 + 1]) {
         await expectLater(
           LocalMediaServer.start(
             size: 10,
@@ -115,7 +171,7 @@ void main() {
           throwsFormatException,
         );
       }
-      for (final limit in [0, -1, 513]) {
+      for (final limit in [0, -1, 8193]) {
         await expectLater(
           LocalMediaServer.start(
             size: 10,

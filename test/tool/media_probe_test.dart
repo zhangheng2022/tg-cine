@@ -114,30 +114,87 @@ Uint8List mp4({int indexSize = 1024, bool extended = false}) {
 
 void main() {
   test(
-    'closing while replacing a download window cannot start a new download',
+    'failed range update cancels native work and a later read can restart',
     () async {
       final calls = <Map<String, dynamic>>[];
-      final base = await probe(calls, fileSize: 6 * MediaProbe.chunkSize);
-      final cancelling = Completer<void>();
-      final cancelled = Completer<void>();
+      final base = await probe(calls, fileSize: 3 * MediaProbe.prefetchSize);
+      var downloads = 0;
       final media = await MediaProbe.open({'chatId': -42, 'messageId': 7}, (
         request,
       ) async {
-        if (request['@type'] == 'cancelDownloadFile') {
-          cancelling.complete();
-          await cancelled.future;
+        if (request['@type'] == 'downloadFile' && ++downloads == 2) {
+          throw const TdlibRequestError(500);
         }
         return base.request(request);
       });
       await media.read(0, 20);
-      final pending = media.read(5 * MediaProbe.chunkSize, 20);
-      final failure = expectLater(pending, throwsStateError);
-      await cancelling.future;
+      final next = MediaProbe.prefetchSize + MediaProbe.chunkSize;
+      await expectLater(
+        media.read(next, 20),
+        throwsA(isA<TdlibRequestError>()),
+      );
+      expect(
+        calls.where((call) => call['@type'] == 'cancelDownloadFile'),
+        hasLength(1),
+      );
+      expect(await media.read(next, 20), hasLength(20));
+      expect(downloads, 3);
+      expect(
+        calls
+            .where((call) => call['@type'] == 'downloadFile')
+            .every(
+              (call) =>
+                  (call['limit'] as int) > 0 &&
+                  (call['limit'] as int) <= MediaProbe.prefetchSize,
+            ),
+        isTrue,
+      );
       await media.close();
-      cancelled.complete();
+      expect(
+        calls.where((call) => call['@type'] == 'cancelDownloadFile'),
+        hasLength(2),
+      );
+      await base.close();
+    },
+  );
+
+  test(
+    'closing during prefetch wait cannot start a replacement download',
+    () async {
+      final calls = <Map<String, dynamic>>[];
+      final base = await probe(calls, fileSize: 2 * MediaProbe.prefetchSize);
+      final waiting = Completer<void>();
+      final release = Completer<void>();
+      var switching = false;
+      final media = await MediaProbe.open({'chatId': -42, 'messageId': 7}, (
+        request,
+      ) async {
+        if (switching &&
+            request['@type'] == 'getFileDownloadedPrefixSize' &&
+            request['offset'] == 0) {
+          waiting.complete();
+          await release.future;
+        }
+        return base.request(request);
+      });
+      await media.read(0, 20);
+      switching = true;
+      final pending = media.read(
+        MediaProbe.prefetchSize + MediaProbe.chunkSize,
+        20,
+      );
+      final failure = expectLater(pending, throwsStateError);
+      await waiting.future;
+      await media.close();
+      release.complete();
       await failure;
       expect(
         calls.where((call) => call['@type'] == 'downloadFile'),
+        hasLength(1),
+      );
+      expect(calls.last['@type'], 'getFileDownloadedPrefixSize');
+      expect(
+        calls.where((call) => call['@type'] == 'cancelDownloadFile'),
         hasLength(1),
       );
       await base.close();
@@ -145,7 +202,10 @@ void main() {
   );
   test('ready reads never start or cancel a download and retain bounded cache copies', () async {
     final calls = <Map<String, dynamic>>[];
-    final media = await probe(calls, fileSize: 6 * MediaProbe.chunkSize);
+    final media = await probe(
+      calls,
+      fileSize: MediaProbe.prefetchSize + 2 * MediaProbe.chunkSize,
+    );
     expect(await media.readReady(0, 20), isNull);
     expect(calls.any((call) => call['@type'] == 'downloadFile'), isFalse);
     await media.read(0, 20);
@@ -170,7 +230,10 @@ void main() {
     'ready reads reject short native parts without cancelling another lane',
     () async {
       final calls = <Map<String, dynamic>>[];
-      final base = await probe(calls, fileSize: 6 * MediaProbe.chunkSize);
+      final base = await probe(
+        calls,
+        fileSize: MediaProbe.prefetchSize + 2 * MediaProbe.chunkSize,
+      );
       final media = await MediaProbe.open({'chatId': -42, 'messageId': 7}, (
         request,
       ) async {
@@ -195,12 +258,12 @@ void main() {
     },
   );
   test(
-    'finishes bounded prefetch before returning the first readable chunk',
+    'returns the first readable chunk without waiting for the whole prefetch',
     () async {
       final calls = <Map<String, dynamic>>[];
       final media = await probe(
         calls,
-        fileSize: 6 * MediaProbe.chunkSize,
+        fileSize: MediaProbe.prefetchSize + 2 * MediaProbe.chunkSize,
         gradualPrefetch: true,
       );
       expect(await media.read(0, 64 * 1024), hasLength(64 * 1024));
@@ -215,17 +278,65 @@ void main() {
         calls
             .sublist(calls.indexOf(download) + 1, reading)
             .where((call) => call['@type'] == 'getFileDownloadedPrefixSize'),
-        hasLength(2),
+        hasLength(1),
       );
       expect(calls[reading]['count'], MediaProbe.chunkSize);
       await media.close();
+    },
+  );
+  test(
+    'switching cold tracks waits for prefetch while cached reads continue',
+    () async {
+      final calls = <Map<String, dynamic>>[];
+      final base = await probe(calls, fileSize: 2 * MediaProbe.prefetchSize);
+      var complete = false;
+      var waiting = false;
+      final media = await MediaProbe.open({'chatId': -42, 'messageId': 7}, (
+        request,
+      ) async {
+        if (request['@type'] == 'getFileDownloadedPrefixSize' &&
+            request['offset'] == 0 &&
+            calls.any((call) => call['@type'] == 'downloadFile')) {
+          waiting = true;
+          return {
+            'size': complete ? MediaProbe.prefetchSize : MediaProbe.chunkSize,
+          };
+        }
+        return base.request(request);
+      });
+      expect(await media.read(0, 64 * 1024), hasLength(64 * 1024));
+      waiting = false;
+      final next = media.read(
+        MediaProbe.prefetchSize + MediaProbe.chunkSize,
+        64 * 1024,
+      );
+      while (!waiting) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      expect(
+        calls.where((call) => call['@type'] == 'downloadFile'),
+        hasLength(1),
+      );
+      expect(
+        calls.any((call) => call['@type'] == 'cancelDownloadFile'),
+        isFalse,
+      );
+      expect(await media.readReady(64 * 1024, 64 * 1024), hasLength(64 * 1024));
+      complete = true;
+      expect(await next, hasLength(64 * 1024));
+      expect(
+        calls.where((call) => call['@type'] == 'downloadFile'),
+        hasLength(2),
+      );
+      await media.close();
+      await base.close();
     },
   );
   test('unaligned reads restart at the native window boundary instead of waiting for a missing tail', () async {
     final calls = <Map<String, dynamic>>[];
     final media = await probe(
       calls,
-      fileSize: 6 * MediaProbe.chunkSize,
+      fileSize: MediaProbe.prefetchSize + 2 * MediaProbe.chunkSize,
       alignedWindows: true,
     );
     await media.read(100, 20);
@@ -239,7 +350,7 @@ void main() {
     expect(downloads, hasLength(2));
     expect(downloads.map((call) => call['offset']), [
       0,
-      3 * MediaProbe.chunkSize,
+      MediaProbe.prefetchSize - MediaProbe.chunkSize,
     ]);
     expect(
       downloads.every(
@@ -398,12 +509,12 @@ void main() {
     },
   );
 
-  test('adjacent uncached reads reuse a bounded window; seek cancels it and cached reads do not restart', () async {
+  test('adjacent reads reuse a bounded window; range updates preserve the task and cached reads do not restart', () async {
     final calls = <Map<String, dynamic>>[];
     final media = await probe(
       calls,
       prefix: 0,
-      fileSize: 6 * MediaProbe.chunkSize + 7,
+      fileSize: MediaProbe.prefetchSize + 2 * MediaProbe.chunkSize + 7,
     );
     await media.read(0, MediaProbe.chunkSize);
     await media.read(MediaProbe.chunkSize, MediaProbe.chunkSize);
@@ -412,17 +523,17 @@ void main() {
       hasLength(1),
     );
     expect(calls.any((call) => call['@type'] == 'cancelDownloadFile'), isFalse);
-    await media.read(5 * MediaProbe.chunkSize, 20);
+    await media.read(MediaProbe.prefetchSize + MediaProbe.chunkSize, 20);
     final downloads = calls
         .where((call) => call['@type'] == 'downloadFile')
         .toList();
     expect(downloads, hasLength(2));
     expect(downloads.first['limit'], MediaProbe.prefetchSize);
-    expect(downloads.last['limit'], media.size - 5 * MediaProbe.chunkSize);
     expect(
-      calls[calls.indexOf(downloads.last) - 1]['@type'],
-      'cancelDownloadFile',
+      downloads.last['limit'],
+      media.size - MediaProbe.prefetchSize - MediaProbe.chunkSize,
     );
+    expect(calls.any((call) => call['@type'] == 'cancelDownloadFile'), isFalse);
     await media.read(0, 20);
     expect(
       calls.where((call) => call['@type'] == 'downloadFile'),

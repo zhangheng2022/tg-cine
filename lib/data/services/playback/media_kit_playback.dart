@@ -12,7 +12,7 @@ class MediaKitPlayback implements Playback {
     player = Player(
       configuration: const PlayerConfiguration(
         title: 'TG Cine',
-        bufferSize: 8 * 1024 * 1024,
+        bufferSize: 16 * 1024 * 1024,
         logLevel: MPVLogLevel.error,
       ),
     );
@@ -61,15 +61,25 @@ class MediaKitPlayback implements Playback {
   }
 
   @override
-  Future<void> open() async {
+  Future<void> open({Duration? position}) async {
     _failed = false;
     _opening = true;
     _emit();
     try {
       final uri = await source();
       await configureNativePlayback(player);
-      await player.open(Media(uri.toString()), play: false);
+      await player.open(
+        Media(
+          uri.toString(),
+          start: separateAudio ? Duration.zero : position ?? Duration.zero,
+        ),
+        play: false,
+      );
       if (separateAudio) await configureNativeAudio(player, uri);
+      // Seek after adding the separate demuxer so both tracks restore together.
+      if (separateAudio && position != null && position > Duration.zero) {
+        await player.seek(position);
+      }
       await player.play();
     } catch (_) {
       _failed = true;

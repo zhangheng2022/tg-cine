@@ -56,7 +56,7 @@ Future<Map<String, dynamic>> verifyPlayback(
           'startSeconds': start,
           'bytesServed': server.bytesServed,
           'pendingRequests': server.pendingRequests,
-          'rangeRequests': server.ranges.length,
+          'rangeRequests': server.rangeRequests,
           'failedRequests': server.failedRequests,
         }),
       );

@@ -555,7 +555,7 @@ Future<void> main(List<String> arguments) async {
         ).writeAsString(
           jsonEncode({
             'bytesServed': mediaServer.bytesServed,
-            'rangeCount': mediaServer.ranges.length,
+            'rangeCount': mediaServer.rangeRequests,
             'ranges': mediaServer.ranges,
             'failedRequests': mediaServer.failedRequests,
             'queuedRequests': mediaServer.queuedRequests,
@@ -563,9 +563,7 @@ Future<void> main(List<String> arguments) async {
             'trace': mediaTrace.snapshot(),
             'bridgeTraffic': bridge?.traffic,
             'relayTraceIds': bridge?.traceIds,
-            'budgetExhausted':
-                mediaServer.bytesServed >= mediaServer.maxBytes ||
-                mediaServer.ranges.length >= mediaServer.maxRanges,
+            'budgetExhausted': mediaServer.budgetExhausted,
           }),
           flush: true,
         );

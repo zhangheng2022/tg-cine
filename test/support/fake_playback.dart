@@ -12,6 +12,7 @@ class FakePlayback implements Playback {
   bool failSeek = false;
   bool disposed = false;
   int opens = 0;
+  Duration? openedPosition;
   Completer<void>? opening;
   final seeks = <Duration>[];
 
@@ -24,14 +25,16 @@ class FakePlayback implements Playback {
   Stream<PlaybackState> get states => controller.stream;
 
   @override
-  Future<void> open() async {
+  Future<void> open({Duration? position}) async {
     opens++;
+    openedPosition = position ?? Duration.zero;
     if (failOpen) throw StateError('private source must not reach UI');
     await opening?.future;
     emit(
       PlaybackState(
         status: PlaybackStatus.ready,
         playing: true,
+        position: position ?? Duration.zero,
         duration: state.duration,
       ),
     );

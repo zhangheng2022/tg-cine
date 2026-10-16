@@ -9,7 +9,10 @@ Future<void> configureNativePlayback(Player player) async {
     await native.setProperty('stream-buffer-size', '${32 * 1024 * 1024}');
     // Disk caching limits packet metadata rather than media bytes.
     await native.setProperty('cache-on-disk', 'no');
-    await native.setProperty('cache-secs', '10');
+    await native.setProperty('cache-secs', '20');
+    // Fill both demuxers before playback or a seek crosses cold TDLib ranges.
+    await native.setProperty('cache-pause-initial', 'yes');
+    await native.setProperty('cache-pause-wait', '20');
     // Cold TDLib ranges can outlast media_kit's five-second HTTP timeout.
     await native.setProperty('network-timeout', '30');
   }
@@ -42,7 +45,6 @@ Future<void> configureNativeAudio(Player player, Uri source) async {
     }
   }
   if (hasTrack(tracks.audio.map((track) => track.id))) {
-    // shortcut: audio alias belongs to the private development source; replace with media-source metadata for in-app playback.
     // Separate demuxers keep distant audio/video offsets in independent byte buffers.
     await player.setAudioTrack(
       AudioTrack.uri(source.replace(path: '${source.path}/audio').toString()),

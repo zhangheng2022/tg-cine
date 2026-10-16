@@ -264,9 +264,7 @@ Future<Map<String, dynamic>> verifyPlaybackSession(
         } on StateError {
           // Input opening precedes the playing state.
         }
-        if (server!.failedRequests > 0 ||
-            server.bytesServed >= server.maxBytes ||
-            server.ranges.length >= server.maxRanges) {
+        if (server!.failedRequests > 0 || server.budgetExhausted) {
           throw StateError('Media requests failed while opening');
         }
         if (timer.elapsedMilliseconds % 5000 < 600) {
@@ -280,7 +278,7 @@ Future<Map<String, dynamic>> verifyPlaybackSession(
     for (final target in [0, media.duration! ~/ 2, 30]) {
       phase = 'playback at $target seconds';
       final beforeBytes = server.bytesServed;
-      final beforeRanges = server.ranges.length;
+      final beforeRanges = server.rangeRequests;
       final seekTimer = Stopwatch()..start();
       if (target > 0) await poll(seek: target);
       final first = await waitReady(target);
@@ -309,7 +307,7 @@ Future<Map<String, dynamic>> verifyPlaybackSession(
         'endSeconds': samples.last['timeSeconds'],
         ...summary,
         'bytesServed': server.bytesServed - beforeBytes,
-        'newRangeRequests': server.ranges.length - beforeRanges,
+        'newRangeRequests': server.rangeRequests - beforeRanges,
       });
       stderr.writeln(
         jsonEncode({

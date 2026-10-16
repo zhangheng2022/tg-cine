@@ -127,9 +127,7 @@ Future<void> main() async {
       report['http'] = {
         'bytesServed': server.bytesServed,
         'failedRequests': server.failedRequests,
-        'budgetExhausted':
-            server.bytesServed >= server.maxBytes ||
-            server.ranges.length >= server.maxRanges,
+        'budgetExhausted': server.budgetExhausted,
       };
     }
     final destination = File.fromUri(

@@ -27,6 +27,7 @@ Future<Map<String, Object>> observePlayback(
     final nativeMs = await clock('time-pos');
     final audioMs = audioRequired ? await clock('audio-pts') : 0;
     final avSyncMs = audioRequired ? await clock('avsync') : 0;
+    final nativeBuffering = await native.getProperty('paused-for-cache');
     final elapsedMs = timer.elapsedMilliseconds;
     final clocks = {
       'nativeMs': nativeMs,
@@ -45,7 +46,8 @@ Future<Map<String, Object>> observePlayback(
         'nativeMs': nativeMs!,
         'audioMs': audioMs!,
         'avSyncMs': avSyncMs!,
-        'buffering': player.state.buffering ? 1 : 0,
+        'buffering': player.state.buffering || nativeBuffering == 'yes' ? 1 : 0,
+        'nativeBuffering': nativeBuffering == 'yes' ? 1 : 0,
         'lifecycle': WidgetsBinding.instance.lifecycleState?.index ?? -1,
         'framesEnabled': WidgetsBinding.instance.framesEnabled ? 1 : 0,
       });
